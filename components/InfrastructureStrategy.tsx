@@ -1,57 +1,93 @@
 
+import { Shield, Rocket, Settings, Gauge, Zap, CheckCircle2, Server, Lock, Globe, Database, Cpu, Search } from 'lucide-react';
 import React from 'react';
-import { Shield, Rocket, Settings, Gauge, Zap, CheckCircle2, Server, Lock, Globe, Database } from 'lucide-react';
 
 const InfrastructureStrategy: React.FC = () => {
   const phases = [
     {
-      title: "المرحلة الأولى: الأساس والتحصين (Foundation)",
+      title: "المرحلة الأولى: التأسيس والتحصين السيادي (Sovereign Foundation)",
       icon: <Lock className="text-red-500" />,
       color: "border-red-500",
-      items: ["تثبيت Ubuntu 24.04 LTS", "تصليب SSH وتعطيل كلمة المرور", "إعداد UFW و Fail2Ban", "ربط Cloudflare Proxy"]
+      items: [
+        "تثبيت Ubuntu 24.04 LTS المستقر",
+        "تصليب SSH (تعطيل Root Login وكلمات المرور)",
+        "إعداد Technitium DNS لإدارة النطاقات محلياً ومنع الحجب",
+        "تفعيل DoH (DNS-over-HTTPS) لتشفير استعلامات الشبكة"
+      ]
     },
     {
-      title: "المرحلة الثانية: النشر السيادي (Deployment)",
+      title: "المرحلة الثانية: بيئة الحاويات والربط (Docker Mesh & Routing)",
       icon: <Rocket className="text-blue-500" />,
       color: "border-blue-500",
-      items: ["تنصيب Docker & Docker Compose", "إعداد شبكة yemenjpt-net", "نشر لوحة Coolify/Portainer", "إعداد Traefik Reverse Proxy"]
+      items: [
+        "إعداد شبكة yemenjpt-net المعزولة برمجياً",
+        "تنصيب Traefik v3.0 كبوابة توجيه ذكية (Edge Proxy)",
+        "نشر Coolify لإدارة دورة حياة الميكروسيرفس",
+        "إعداد SSL محلي عبر Let's Encrypt و DNS Challenge"
+      ]
     },
     {
-      title: "المرحلة الثالثة: التخصيص والتعريب (Localization)",
-      icon: <Globe className="text-green-500" />,
-      color: "border-green-500",
-      items: ["تعريب الواجهات (RTL Support)", "إعداد Keycloak (SSO)", "تخصيص الهوية البصرية YemenJPT", "تحميل حزم اللغة لـ Tesseract"]
-    },
-    {
-      title: "المرحلة الرابعة: تحسين الأداء (Optimization)",
-      icon: <Gauge className="text-yemenGold" />,
-      color: "border-yemenGold",
-      items: ["تفعيل ضغط Brotli/Gzip", "إعداد Redis Caching", "تحسين الصور (WebP Conversion)", "تحديد قيود الموارد (Limits)"]
-    },
-    {
-      title: "المرحلة الخامسة: الأتمتة والنسخ (Automation)",
-      icon: <Zap className="text-purple-500" />,
+      title: "المرحلة الثالثة: النواة الذكية والتعريب (AI Core & Localization)",
+      icon: <Brain className="text-purple-500" size={20} />,
       color: "border-purple-500",
-      items: ["أتمتة النسخ الاحتياطي (3-2-1 Strategy)", "إعداد Watchtower للتحديثات", "بناء AI Agents عبر n8n", "تفعيل تنبيهات Signal/Telegram"]
+      items: [
+        "نشر Ollama مع دعم Llama 3 و Qwen محلياً",
+        "إعداد Open WebUI كواجهة تفاعلية سيادية أساسية",
+        "تفعيل LibreTranslate للترجمة الفورية دون إنترنت",
+        "دمج Whisper لعمليات التفريغ الصوتي الاستقصائي"
+      ]
+    },
+    {
+      title: "المرحلة الرابعة: الذاكرة والأداء العالي (Storage & Optimization)",
+      icon: <Database className="text-yemenGold" />,
+      color: "border-yemenGold",
+      items: [
+        "نشر Qdrant كقاعدة بيانات شعاعية (Vector DB) للذاكرة العميقة",
+        "إعداد Redis لإدارة الكاش وتسريع استجابة الواجهات",
+        "تحسين استهلاك الذاكرة عبر قيود Docker Resource Limits",
+        "تفعيل ضغط Brotli على مستوى Traefik لتقليل حجم البيانات"
+      ]
+    },
+    {
+      title: "المرحلة الخامسة: الأتمتة والأرشفة الدائمة (Intelligence Pipeline)",
+      icon: <Zap className="text-orange-500" />,
+      color: "border-orange-500",
+      items: [
+        "بناء تدفقات n8n لجمع البيانات من SearXNG و Huginn",
+        "إعداد ArchiveBox للأرشفة الفورية للأدلة الرقمية",
+        "تفعيل نظام النسخ الاحتياطي المشفر 3-2-1 إلى Off-site",
+        "نشر ميكروسيرفس Sentinel-2 لتحليل صور الأقمار الصناعية"
+      ]
     }
   ];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
+      {/* Hero Section */}
       <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm overflow-hidden relative">
         <div className="absolute top-0 right-0 w-64 h-64 bg-yemenBlue/5 rounded-full -mr-32 -mt-32"></div>
         <div className="relative z-10">
-          <h2 className="text-3xl font-black text-yemenBlue mb-4">استراتيجية التنفيذ السيادي (Master Strategy)</h2>
+          <h2 className="text-3xl font-black text-yemenBlue mb-4">استراتيجية التنفيذ السيادي v1.5 (Master Strategy)</h2>
           <p className="text-gray-600 max-w-3xl leading-relaxed">
-            خارطة طريق تقنية لنشر YemenJPT على خادم <code className="bg-gray-100 px-2 py-1 rounded text-yemenBlue font-mono">hosting.raidan.pro</code> 
-            مع ضمان السيادة الكاملة والأداء الأقصى في البيئة اليمنية.
+            خارطة الطريق التقنية المحدثة لنشر نظام YemenJPT. تركز هذه الاستراتيجية على دمج "الذاكرة الشعاعية" (Qdrant) و"الواجهة الموحدة" (Open WebUI) لضمان أداء استثنائي وسيادة رقمية كاملة.
           </p>
+          <div className="flex gap-4 mt-6">
+            <div className="flex items-center gap-2 text-xs font-bold text-yemenBlue bg-blue-50 px-3 py-1.5 rounded-full">
+              <Cpu size={14} />
+              Host: hosting.raidan.pro
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-full">
+              <Shield size={14} />
+              Protocol: Air-gapped Ready
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Strategy Phases Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {phases.map((phase, idx) => (
-          <div key={idx} className={`bg-white rounded-xl border-t-4 ${phase.color} shadow-sm p-6 hover:shadow-md transition-all group`}>
+          <div key={idx} className={`bg-white rounded-xl border-t-4 ${phase.color} shadow-sm p-6 hover:shadow-md transition-all group relative`}>
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 bg-gray-50 rounded-lg group-hover:scale-110 transition-transform">
                 {phase.icon}
@@ -66,37 +102,80 @@ const InfrastructureStrategy: React.FC = () => {
                 </li>
               ))}
             </ul>
+            <div className="absolute top-4 left-4 text-gray-100 font-black text-4xl -z-0 opacity-10 group-hover:opacity-20 transition-opacity">
+              0{idx + 1}
+            </div>
           </div>
         ))}
 
-        <div className="lg:col-span-1 bg-yemenBlue text-white rounded-xl p-6 flex flex-col justify-between shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 opacity-10">
-             <Server size={120} />
+        {/* Global Status Card */}
+        <div className="lg:col-span-1 bg-gradient-to-br from-yemenBlue-dark to-yemenBlue text-white rounded-xl p-6 flex flex-col justify-between shadow-lg relative overflow-hidden border-b-4 border-yemenGold">
+          <div className="absolute top-0 right-0 opacity-10 rotate-12">
+             <Server size={140} />
           </div>
-          <div>
-            <h3 className="text-xl font-bold mb-2">الحالة الراهنة للبنية</h3>
-            <div className="space-y-4 mt-4">
-              <div className="flex justify-between items-center text-sm">
-                <span>توزيع الحمل (Load Balancing)</span>
-                <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold">نشط (Traefik)</span>
+          <div className="relative z-10">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Gauge size={20} className="text-yemenGold" />
+              مؤشرات السيادة الحالية
+            </h3>
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px] uppercase font-bold text-blue-200 tracking-wider">
+                  <span>تغطية الأرشفة الذاتية</span>
+                  <span>92%</span>
+                </div>
+                <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-yemenGold h-full w-[92%] shadow-[0_0_8px_rgba(212,175,55,0.4)]"></div>
+                </div>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span>الشبكة السيادية</span>
-                <span className="bg-green-500 px-2 py-0.5 rounded text-[10px] font-bold">مؤمنة (Air-gapped ready)</span>
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px] uppercase font-bold text-blue-200 tracking-wider">
+                  <span>نسبة استقلالية الـ AI</span>
+                  <span>100% (Air-gapped)</span>
+                </div>
+                <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-green-400 h-full w-full"></div>
+                </div>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span>النسخ الاحتياطي</span>
-                <span className="bg-yemenGold px-2 py-0.5 rounded text-[10px] font-bold text-yemenBlue">مجدول (Off-site)</span>
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px] uppercase font-bold text-blue-200 tracking-wider">
+                  <span>كفاءة البحث الشعاعي</span>
+                  <span>88% (Qdrant Indexed)</span>
+                </div>
+                <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-blue-400 h-full w-[88%]"></div>
+                </div>
               </div>
             </div>
           </div>
-          <button className="mt-8 bg-white text-yemenBlue font-bold py-2 rounded-lg hover:bg-yemenGold hover:text-yemenBlue-dark transition-colors">
-            تحميل تقرير التدقيق الأمني
+          <button className="mt-8 bg-yemenGold hover:bg-yemenGold-light text-yemenBlue-dark font-black py-2.5 rounded-lg text-xs transition-all flex items-center justify-center gap-2">
+            <Search size={14} />
+            تحميل تقرير الامتثال السيادي
           </button>
         </div>
       </div>
     </div>
   );
 };
+
+const Brain: React.FC<{size?: number, className?: string}> = ({size = 24, className = ""}) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .52 8.105 4 4 0 0 0 6.003 0 4 4 0 0 0 .52-8.105 4 4 0 0 0-2.526-5.77A3 3 0 0 0 12 5Z" />
+    <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.52 8.105 4 4 0 0 1-6.003 0 4 4 0 0 1-.52-8.105 4 4 0 0 1 2.526-5.77A3 3 0 0 1 12 5Z" />
+    <path d="M9 13a4.5 4.5 0 0 0 3 4 4.5 4.5 0 0 0 3-4" />
+    <path d="M12 17v4" />
+    <path d="M12 12V5" />
+  </svg>
+);
 
 export default InfrastructureStrategy;
