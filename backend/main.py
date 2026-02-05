@@ -15,12 +15,19 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
-# استيراد محركات النظام
-from backend import snapshot_engine
-from backend import email_engine
-from backend.lifeline import server_teleport, gdrive_backup
-# Import Installer Logic
-from backend import install_logic
+# --- Import Logic Fix (Docker vs Local) ---
+try:
+    # Container Environment (Files are at /app root)
+    import install_logic
+    import snapshot_engine
+    import email_engine
+    from lifeline import server_teleport, gdrive_backup
+except ImportError:
+    # Local Dev Environment (Running from project root)
+    from backend import install_logic
+    from backend import snapshot_engine
+    from backend import email_engine
+    from backend.lifeline import server_teleport, gdrive_backup
 
 app = FastAPI(title="YemenJPT Sovereign Core API")
 
@@ -56,7 +63,7 @@ async def read_root():
         wizard_path = STATIC_DIR / "wizard.html"
         if wizard_path.exists():
             return FileResponse(wizard_path)
-        return {"status": "Installer Mode Active", "error": "Wizard UI file missing. Check /static/wizard.html"}
+        return {"status": "Installer Mode Active", "error": "Wizard UI file missing. Check /app/static/wizard.html"}
     
     return {"status": "RaidanPro Core API Active", "docs_url": "/docs"}
 
@@ -132,5 +139,3 @@ async def list_local_models():
             return {"models": []}
     except:
         return {"models": [], "error": "Ollama Offline"}
-
-# ... (Rest of existing endpoints) ...
