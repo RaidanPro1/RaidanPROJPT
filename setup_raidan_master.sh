@@ -2,7 +2,7 @@
 set -e # Stop execution immediately on error
 
 # ==============================================================================
-# 🇾🇪 RAIDAN PRO MASTER DEPLOYMENT SCRIPT v1.1 (Hybrid/Native)
+# 🇾🇪 RAIDAN PRO MASTER DEPLOYMENT SCRIPT v1.2 (Hybrid/Native)
 # Target OS: Debian 13 (Trixie)
 # Architect: Senior SRE Team
 # ==============================================================================
@@ -138,8 +138,17 @@ log_success "System Sterilized & Updated."
 # ==============================================================================
 print_header "PHASE 2: CORE INFRASTRUCTURE BUILD"
 
-# Install Python Deps for Validation
-pip3 install requests psycopg2-binary google-generativeai --break-system-packages
+# Install Python Deps using VENV to avoid System Conflicts
+log_info "Setting up Python Virtual Environment..."
+python3 -m venv /opt/raidan_data/venv
+VENV_PYTHON="/opt/raidan_data/venv/bin/python"
+VENV_PIP="/opt/raidan_data/venv/bin/pip"
+
+# Upgrade pip and install requirements in isolation
+# Added: python-dotenv (for env loading), httpx (for dns automator)
+log_info "Installing Host Python Dependencies..."
+$VENV_PIP install --upgrade pip
+$VENV_PIP install requests psycopg2-binary google-generativeai python-dotenv httpx
 
 # Network Setup
 log_info "Creating Sovereign Network (172.28.0.0/16)..."
@@ -152,7 +161,7 @@ docker compose -f deployment/docker-compose.prod.yml up -d postgres redis
 # Wait & Validate
 log_info "Waiting for Database Initialization (15s)..."
 sleep 15
-python3 validate_stage.py check_db
+$VENV_PYTHON validate_stage.py check_db
 if [ $? -eq 0 ]; then
     log_success "Core Infrastructure Verified."
 else
@@ -186,10 +195,7 @@ ollama pull nomic-embed-text
 
 # Legal Injection
 log_info "Injecting Yemeni Legal Context..."
-python3 legal_injector.py
-# Check AI Health (Using 127.0.0.1 since we are on host)
-# Note: The validator script might need to point to localhost now for this check
-# But the env setup points to the docker gateway for containers.
+$VENV_PYTHON legal_injector.py
 
 log_success "AI Brain Hardened & Legally Compliant."
 
@@ -204,7 +210,7 @@ docker compose -f deployment/docker-compose.prod.yml up -d backend yemen-core
 
 # Validate API
 sleep 10
-python3 validate_stage.py check_api
+$VENV_PYTHON validate_stage.py check_api
 
 log_success "Backend Logic Operational."
 
@@ -219,7 +225,7 @@ docker compose -f deployment/docker-compose.prod.yml up -d frontend evolution-ap
 
 # DNS Sync
 log_info "Syncing DNS Records with Cloudflare..."
-python3 backend/dns_automator.py
+$VENV_PYTHON backend/dns_automator.py
 
 log_success "Gateway Active & Secured."
 
