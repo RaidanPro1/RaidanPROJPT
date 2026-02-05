@@ -1,9 +1,9 @@
 
 version: '3.8'
 
-# RaidanPro Master Sovereign Deployment v2.0
-# Target: Ubuntu 24.04 LTS
-# Compliance Level: Strict (Yemeni Law 1990/1994)
+# RaidanPro Master Sovereign Deployment v2.1
+# Target: Ubuntu 24.04 LTS / Debian 13
+# Architecture: Native AI + Containerized Services
 
 networks:
   sovereign-net:
@@ -11,11 +11,14 @@ networks:
     name: sovereign-net
     driver_opts:
       com.docker.network.bridge.name: br-sovereign
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
 
 volumes:
   postgres_data:
   redis_data:
-  ollama_models:
   minio_data:
   sovereign_logs:
 
@@ -35,7 +38,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ../yemen_core_backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - sovereign-net
+      sovereign-net:
+        ipv4_address: 172.28.0.10
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-raidan_root} -d raidan_core"]
       interval: 10s
@@ -50,26 +54,13 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - sovereign-net
+      sovereign-net:
+        ipv4_address: 172.28.0.12
 
   # --- 2. Intelligence Layer ---
 
-  # Local AI Inference Engine
-  ollama:
-    image: ollama/ollama:latest
-    container_name: raidan-ollama
-    restart: always
-    volumes:
-      - ollama_models:/root/.ollama
-    networks:
-      - sovereign-net
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+  # NOTE: Ollama is installed NATIVELY on the host for direct hardware access.
+  # Backend services connect via the Docker Gateway IP (172.28.0.1).
 
   # Yemen Core API (Knowledge Graph & Ingestion)
   yemen-core:
@@ -79,12 +70,13 @@ services:
     container_name: raidan-yemen-core
     restart: always
     environment:
-      - DATABASE_URL=postgresql://${DB_USER:-raidan_root}:${DB_PASSWORD:-secure_root_pass}@postgres:5432/raidan_core
+      - DATABASE_URL=postgresql://${DB_USER:-raidan_root}:${DB_PASSWORD:-secure_root_pass}@172.28.0.10:5432/raidan_core
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - sovereign-net
+      sovereign-net:
+        ipv4_address: 172.28.0.31
 
   # --- 3. Application Layer ---
 
@@ -96,7 +88,9 @@ services:
     container_name: raidan-backend
     restart: always
     environment:
-      - DATABASE_URL=postgresql://${DB_USER:-raidan_root}:${DB_PASSWORD:-secure_root_pass}@postgres:5432/raidan_core
+      - DATABASE_URL=postgresql://${DB_USER:-raidan_root}:${DB_PASSWORD:-secure_root_pass}@172.28.0.10:5432/raidan_core
+      # Point to Host Gateway for Native Ollama Access
+      - OLLAMA_HOST=http://172.28.0.1:11434
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - CF_API_TOKEN=${CF_API_TOKEN}
       - SECRET_KEY=${SECRET_KEY}
@@ -106,7 +100,8 @@ services:
       - postgres
       - redis
     networks:
-      - sovereign-net
+      sovereign-net:
+        ipv4_address: 172.28.0.30
 
   # Frontend (Next.js/React UI)
   frontend:
@@ -121,7 +116,8 @@ services:
     depends_on:
       - backend
     networks:
-      - sovereign-net
+      sovereign-net:
+        ipv4_address: 172.28.0.32
 
   # --- 4. Security & Isolation ---
   
@@ -133,4 +129,5 @@ services:
     environment:
       - AUTHENTICATION_API_KEY=${WHATSAPP_API_KEY}
     networks:
-      - sovereign-net
+      sovereign-net:
+        ipv4_address: 172.28.0.50

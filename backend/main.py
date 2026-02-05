@@ -19,6 +19,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend import snapshot_engine
 from backend import email_engine
 from backend.lifeline import server_teleport, gdrive_backup
+# Import Installer Logic
+from backend import install_logic
 
 app = FastAPI(title="YemenJPT Sovereign Core API")
 
@@ -30,10 +32,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Setup Static Directory
 STATIC_DIR = Path("static")
+STATIC_DIR.mkdir(parents=True, exist_ok=True) # Ensure it exists
 ICONS_DIR = STATIC_DIR / "icons"
 ICONS_DIR.mkdir(parents=True, exist_ok=True)
+
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# Check Installation Mode
+if os.getenv("INSTALLATION_MODE") == "true":
+    print("🔧 [MODE] Installation Mode Active. Registering Wizard Router...")
+    app.include_router(install_logic.router)
+
+# --- Root Endpoint for Wizard UI ---
+@app.get("/")
+async def read_root():
+    """
+    Serves the Installer Wizard UI if in installation mode, 
+    otherwise returns API status.
+    """
+    if os.getenv("INSTALLATION_MODE") == "true":
+        wizard_path = STATIC_DIR / "wizard.html"
+        if wizard_path.exists():
+            return FileResponse(wizard_path)
+        return {"status": "Installer Mode Active", "error": "Wizard UI file missing. Check /static/wizard.html"}
+    
+    return {"status": "RaidanPro Core API Active", "docs_url": "/docs"}
 
 # --- Agentic Tools Definition (قدرات التحكم في النظام) ---
 # هذه الأدوات يمكن استدعاؤها من قبل Gemini/Ollama إذا كان المستخدم روت

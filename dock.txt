@@ -1,0 +1,47 @@
+
+# 🇾🇪 RaidanPro Sovereign Backend & Installer Engine
+# Base: Python 3.11 Slim (Debian Bookworm)
+
+FROM python:3.11-slim
+
+# Set Environment Variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install System Dependencies
+# CRITICAL: 'docker.io' is required for the Installer Wizard to orchestrate the host via /var/run/docker.sock
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    docker.io \
+    openssl \
+    ffmpeg \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create Application Directory
+WORKDIR /app
+
+# Install Python Dependencies
+# We copy requirements first to leverage Docker layer caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy Application Source
+COPY . .
+
+# Create data directories if they don't exist
+RUN mkdir -p data/logs
+
+# Expose API Port
+EXPOSE 8000
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/ || exit 1
+
+# Default Command
+# Binds to 0.0.0.0 to be accessible from outside the container
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

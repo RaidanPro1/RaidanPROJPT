@@ -1,16 +1,19 @@
 
 #!/bin/bash
-echo "🧠 [PHASE 2] Injecting Intelligence Models..."
+echo "🧠 [PHASE 2] Injecting Intelligence Models (Native Mode)..."
 
-# Start Intelligence Containers
-docker-compose -f deployment/docker-compose.prod.yml up -d ollama yemen-core
+# Ensure Native Ollama is running
+if ! systemctl is-active --quiet ollama; then
+    echo "⚠️ Ollama service not active. Starting..."
+    systemctl start ollama
+fi
 
-echo "📥 Pulling Sovereign Models (Local Execution)..."
+echo "📥 Pulling Sovereign Models (Host Direct)..."
 # Pull Qwen 2.5 (Coding & Logic)
-docker exec raidan-ollama ollama pull qwen2.5-coder:7b
+ollama pull qwen2.5-coder:7b
 # Pull Llama 3 (General Arabic Chat)
-docker exec raidan-ollama ollama pull llama3
+ollama pull llama3
 # Pull Nomic Embed (For RAG)
-docker exec raidan-ollama ollama pull nomic-embed-text
+ollama pull nomic-embed-text
 
-echo "✅ [PHASE 2] Models Loaded & Ready."
+echo "✅ [PHASE 2] Native Models Loaded & Ready."
