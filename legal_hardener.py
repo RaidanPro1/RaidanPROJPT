@@ -3,7 +3,7 @@ import requests
 import json
 import time
 
-# Native Ollama on Host (accessible via localhost during install script execution)
+# Native Ollama on Host (accessible via localhost during install script execution on host)
 OLLAMA_API = "http://localhost:11434/api"
 
 # THE SOVEREIGN CONSTITUTION (الدستور الرقمي)
@@ -26,7 +26,7 @@ def create_sovereign_model():
         requests.get(OLLAMA_API.replace("/api", ""))
     except:
         print("❌ Ollama not reachable on localhost:11434")
-        exit(1)
+        return
 
     payload = {
         "name": "qwen2.5-sovereign",

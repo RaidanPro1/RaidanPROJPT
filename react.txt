@@ -1,0 +1,39 @@
+================================================================================
+🇾🇪 RAIDAN PRO - REACT CONFIGURATION & SETTINGS
+================================================================================
+
+1. ACTIVE VERSIONS (Detected)
+--------------------------------------------------------------------------------
+- Core React Version: ^19.0.0 (RC/Canary via esm.sh)
+- React DOM Version:  ^19.0.0
+- Build Strategy:     Vite (ESM) + Docker Nginx
+
+2. DEPENDENCY RESOLUTION STRATEGY
+--------------------------------------------------------------------------------
+- Conflict: react-leaflet@4.2.1 expects peer react@^18.0.0.
+- Resolution: Dockerfile.frontend updated to use `--legacy-peer-deps`.
+- Status: Forced compatibility enabled for React 19 support.
+
+3. ESM IMPORT MAP (Client-Side / index.html)
+--------------------------------------------------------------------------------
+The following mappings are injected into the browser via Import Map:
+
+"imports": {
+  "react": "https://esm.sh/react@19.0.0",
+  "react-dom": "https://esm.sh/react-dom@19.0.0",
+  "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+  "lucide-react": "https://esm.sh/lucide-react@0.475.0?external=react",
+  "react-leaflet": "https://esm.sh/react-leaflet@4.2.1?external=react,react-dom,leaflet",
+  "leaflet": "https://esm.sh/leaflet@1.9.4",
+  "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+  "react/": "https://esm.sh/react@^19.2.4/"
+}
+
+4. COMPONENT LIBRARIES
+--------------------------------------------------------------------------------
+- UI Components: Tailwind CSS (Utility First)
+- Maps: React Leaflet (v4.2.1)
+- Icons: Lucide React (v0.475.0)
+- Terminal: Xterm.js (v5.3.0)
+
+================================================================================

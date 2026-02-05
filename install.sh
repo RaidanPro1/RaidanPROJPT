@@ -2,7 +2,7 @@
 set -e
 
 # ==============================================================================
-# 🇾🇪 RAIDAN PRO MASTER INSTALLER v3.1 (Fail-Safe Protocol)
+# 🇾🇪 RAIDAN PRO MASTER INSTALLER v3.2 (Fail-Safe Protocol)
 # Target: Debian 13 (Trixie) / Ubuntu 24.04
 # Architecture: Native AI (Host) + Docker Services (Static IPs)
 # ==============================================================================
@@ -32,7 +32,7 @@ echo -e "${BLUE}
 ██║  ██║██║  ██║██║██████╔╝██║  ██║██║ ╚████║
 ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
 ${NC}"
-echo -e "${YELLOW}>> Initiating Protocol v3.1: Sovereign Architecture Build...${NC}\n"
+echo -e "${YELLOW}>> Initiating Protocol v3.2: Sovereign Architecture Build...${NC}\n"
 
 # ==============================================================================
 # PHASE 0: SCORCHED EARTH (TOTAL PURGE)
@@ -138,6 +138,7 @@ SECRET_KEY=${SECRET_KEY}
 ENCRYPTION_KEY=$(openssl rand -hex 16)
 
 # Hybrid Intelligence
+# Docker containers connect to host via the gateway IP
 OLLAMA_HOST=http://172.28.0.1:11434
 # Add your Gemini Key here manually if needed
 GEMINI_API_KEY=""
@@ -151,6 +152,7 @@ log_success "Configuration (.env) Generated."
 log_info "[PHASE 3] Deploying Sovereign Services..."
 
 # Build & Up
+# Force rebuild to ensure Dockerfile changes are picked up
 docker compose up -d --build
 
 log_success "All Services Deployed."

@@ -33,8 +33,37 @@ const AIAssistant: React.FC = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [personaSystemPrompt, setPersonaSystemPrompt] = useState<string>('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const { settings } = useSettings();
+
+  useEffect(() => {
+    const loadPersona = async () => {
+      try {
+        const response = await fetch('/data/config/ai_persona.json');
+        if (response.ok) {
+          const data = await response.json();
+          let template = data.system_prompt_template || '';
+          
+          // Interpolate template values
+          template = template.replace(/\{([\w\.]+)\}/g, (_: string, key: string) => {
+            const keys = key.split('.');
+            let val = data;
+            for (const k of keys) {
+              val = val?.[k];
+              if (val === undefined) return '';
+            }
+            return String(val);
+          });
+          
+          setPersonaSystemPrompt(template);
+        }
+      } catch (error) {
+        console.error("Failed to load AI persona:", error);
+      }
+    };
+    loadPersona();
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -89,11 +118,14 @@ const AIAssistant: React.FC = () => {
       const ai = new GoogleGenAI({ apiKey: apiKey });
       
       // CONFIGURATION GOVERNANCE:
-      // Inject the Sovereign Doctrine defined by Root in GovernancePage
-      const sovereignInstruction = settings.systemDoctrine;
+      // Combine the dynamic Settings Doctrine with the loaded Persona
+      const combinedSystemInstruction = [
+        personaSystemPrompt,
+        settings.systemDoctrine
+      ].filter(Boolean).join("\n\n--- OPERATIONAL DOCTRINE ---\n");
 
       const genAIConfig: any = {
-        systemInstruction: sovereignInstruction,
+        systemInstruction: combinedSystemInstruction,
         tools: [{functionDeclarations: systemTools}], // MCP Tools
       };
       
