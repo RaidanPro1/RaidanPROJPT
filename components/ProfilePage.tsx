@@ -1,6 +1,6 @@
+
 import React, { useState } from 'react';
-// FIX: Added the 'X' icon to the import from lucide-react.
-import { User, Shield, Palette, Save, Key, Lock, Bell, LogOut, Smartphone, Check, X } from 'lucide-react';
+import { User, Shield, Palette, Save, Key, Lock, Bell, LogOut, Smartphone, Check, X, Github, Linkedin, Facebook } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useBranding } from '../context/BrandingContext';
 
@@ -48,6 +48,29 @@ const ProfilePage: React.FC = () => {
                         </div>
                     </section>
                     
+                    {/* Social Links (NEW) */}
+                    <section className="bg-panel p-8 rounded-2xl border border-border-subtle shadow-elevation">
+                        <h3 className="text-sm font-black text-text-primary uppercase tracking-widest mb-6 border-b border-border-subtle pb-4 flex items-center gap-3">
+                           <Github size={16} className="text-brand-primary" /> {t('profile_social_links')}
+                        </h3>
+                        <div className="space-y-4">
+                           <div className="flex items-center justify-between p-4 bg-canvas rounded-xl border border-border-subtle">
+                              <div className="flex items-center gap-3">
+                                 <Github size={20}/>
+                                 <span className="text-sm font-bold">GitHub</span>
+                              </div>
+                              <button className="text-xs font-bold text-brand-primary hover:underline">Connect</button>
+                           </div>
+                           <div className="flex items-center justify-between p-4 bg-canvas rounded-xl border border-border-subtle">
+                              <div className="flex items-center gap-3">
+                                 <Linkedin size={20} className="text-blue-600"/>
+                                 <span className="text-sm font-bold">LinkedIn</span>
+                              </div>
+                              <span className="text-xs font-bold text-green-500 flex items-center gap-1"><Check size={12}/> Connected</span>
+                           </div>
+                        </div>
+                    </section>
+
                     {/* Preferences */}
                     <section className="bg-panel p-8 rounded-2xl border border-border-subtle shadow-elevation">
                         <h3 className="text-sm font-black text-text-primary uppercase tracking-widest mb-6 border-b border-border-subtle pb-4 flex items-center gap-3">

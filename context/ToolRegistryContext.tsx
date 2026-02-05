@@ -49,11 +49,12 @@ export const ToolRegistryProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Note: These update functions will only update the in-memory state.
   // They cannot write to the static JSON file. This is for UI demonstration.
   const updateToolInfo = async (key: string, data: { display_name: string; description: string }) => {
-    setRegistry(prev => {
-        const newRegistry = new Map(prev);
+    setRegistry((prev: Map<string, ModuleRegistryInfo>) => {
+        const newRegistry = new Map<string, ModuleRegistryInfo>(prev);
         const current = newRegistry.get(key);
         if(current) {
-            newRegistry.set(key, { ...current, ...data });
+            const updated: ModuleRegistryInfo = { ...current, ...data };
+            newRegistry.set(key, updated);
         }
         return newRegistry;
     });
@@ -64,11 +65,12 @@ export const ToolRegistryProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const uploadToolIcon = async (key: string, file: File) => {
      // This would require a backend to persist. For now, we simulate.
      const iconUrl = URL.createObjectURL(file);
-     setRegistry(prev => {
-        const newRegistry = new Map(prev);
+     setRegistry((prev: Map<string, ModuleRegistryInfo>) => {
+        const newRegistry = new Map<string, ModuleRegistryInfo>(prev);
         const current = newRegistry.get(key);
         if(current) {
-            newRegistry.set(key, { ...current, icon_name: iconUrl });
+            const updated: ModuleRegistryInfo = { ...current, icon_name: iconUrl };
+            newRegistry.set(key, updated);
         }
         return newRegistry;
     });

@@ -1,137 +1,210 @@
 
 version: '3.8'
 
-# RaidanPro Sovereign Platform v2.0 - Master Orchestrator
-# CTO: Lead Systems Architect
+# 🇾🇪 RaidanPro Master Infrastructure v3.1
+# Static IPAM Configuration (172.28.0.0/16)
 
 networks:
-  sovereign-net:
+  sovereign_net:
     driver: bridge
-    name: sovereign-net
+    name: sovereign_net
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
 
 volumes:
-  yemen-core-db-data:
-    driver: local
-  redis-data:
-    driver: local
-  maps-data:
-    driver: local
+  postgres_data:
+  redis_data:
+  ollama_models:
+  yemen_core_data:
+  minio_data:
+  sovereign_logs:
+  mail_data:
 
 services:
-  # --- 1. Frontend: The Sovereign Root UI ---
+  # --- Layer 1: Gateways (The Door) ---
+  traefik:
+    image: traefik:v3.0
+    container_name: raidan_gateway
+    restart: always
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.2
+
+  authentik-server:
+    image: beryju/authentik:latest
+    container_name: raidan_sso
+    restart: unless-stopped
+    environment:
+      AUTHENTIK_REDIS__HOST: 172.28.0.12
+      AUTHENTIK_POSTGRESQL__HOST: 172.28.0.10
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.3
+
+  # --- Layer 2: Core Infra (The Vault) ---
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: raidan_db
+    restart: always
+    environment:
+      POSTGRES_DB: raidan_core
+      POSTGRES_USER: ${DB_USER:-raidan_root}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.10
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-raidan_root} -d raidan_core"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  yemen-core-db:
+    image: pgvector/pgvector:pg16
+    container_name: raidan_knowledge_db
+    restart: always
+    environment:
+      POSTGRES_DB: yemen_core_db
+      POSTGRES_USER: yemen_core_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - yemen_core_data:/var/lib/postgresql/data
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.11
+
+  redis:
+    image: redis/redis-stack:latest
+    container_name: raidan_cache
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.12
+
+  minio:
+    image: minio/minio:latest
+    container_name: raidan_s3
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.13
+
+  # --- Layer 3: Intelligence (The Brain) ---
+  ollama:
+    image: ollama/ollama:latest
+    container_name: raidan_brain
+    restart: always
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.20
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # --- Layer 4: Tools (The Workers) ---
+  deepsafe:
+    image: raidanpro/deepsafe-engine:latest
+    container_name: raidan_deepsafe
+    restart: unless-stopped
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.22
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: raidan_api
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-raidan_root}:${DB_PASSWORD}@172.28.0.10:5432/raidan_core
+      - OLLAMA_HOST=http://172.28.0.20:11434
+      - CF_API_TOKEN=${CF_API_TOKEN}
+      - CF_ZONE_ID=${CF_ZONE_ID}
+      - SERVER_PUBLIC_IP=${SERVER_PUBLIC_IP}
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.30
+
+  # --- Layer 5: Interface (The Face) ---
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: sovereign-ui
-    ports:
-      - "80:80"
-    networks:
-      - sovereign-net
-    restart: unless-stopped
+    container_name: raidan_ui
+    restart: always
     depends_on:
-      - main-backend
-      - yemen-core-api
-
-  # --- 2. Backend: Main Application & Provisioning API ---
-  main-backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: sovereign-main-api
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://user:password@db_placeholder/main_db # Placeholder for main DB
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      # --- NEW: Social Login Provider Credentials for Authentik/Zitadel ---
-      - AUTHENTIK_URL=${AUTHENTIK_URL}
-      - AUTHENTIK_TOKEN=${AUTHENTIK_TOKEN}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
-    volumes:
-      - ./backend:/app
+      - backend
     networks:
-      - sovereign-net
-    restart: unless-stopped
+      sovereign_net:
+        ipv4_address: 172.28.0.32
 
-  # --- 3. Backend: Terminal Session with Gemini CLI ---
-  terminal-session:
-    build:
-      context: ./backend/terminal
-      dockerfile: Dockerfile
-    container_name: sovereign-terminal
-    # This service is accessed via the main-backend's WebSocket proxy
-    privileged: true # Required for Docker-in-Docker functionality of the CLI
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-    networks:
-      - sovereign-net
-    restart: unless-stopped
-
-  # --- 4. Yemen Core: Sovereign Data Warehouse API ---
-  yemen-core-api:
-    build:
-      context: ./yemen_core_backend
-      dockerfile: Dockerfile
-    container_name: yemen-core-api
-    ports:
-      - "8001:8000"
-    depends_on:
-      yemen-core-db:
-        condition: service_healthy
-    environment:
-      - DATABASE_URL=postgresql://yemen_core_user:sovereign_password@yemen-core-db:5432/yemen_core_db
-    networks:
-      - sovereign-net
-    restart: unless-stopped
-
-  # --- 5. Yemen Core: Knowledge Base (Postgres + pgvector) ---
-  yemen-core-db:
-    image: pgvector/pgvector:pg16
-    container_name: yemen-core-db
-    environment:
-      POSTGRES_DB: yemen_core_db
-      POSTGRES_USER: yemen_core_user
-      POSTGRES_PASSWORD: sovereign_password
-    volumes:
-      - yemen-core-db-data:/var/lib/postgresql/data
-      - ./yemen_core_backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - sovereign-net
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U yemen_core_user -d yemen_core_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # --- 6. Caching & In-Memory Store ---
-  redis:
-    image: redis/redis-stack:latest
-    container_name: sovereign-cache
-    ports:
-      - "6379:6379" # For local debugging
-      - "8001:8001" # For RedisInsight UI
-    volumes:
-      - redis-data:/data
-    networks:
-      - sovereign-net
-    restart: unless-stopped
-
-  # --- 7. Sovereign Map Engine ---
-  tileserver:
-    image: maptiler/tileserver-gl:latest
-    container_name: sovereign-maps
-    ports:
-      - "8080:80"
-    volumes:
-      - ./maps:/data
-    command: ["-c", "/data/config.json"]
+  # --- Layer 6: Search & Mail ---
+  searxng:
+    image: searxng/searxng:latest
+    container_name: raidan_search
     restart: always
     networks:
-      - sovereign-net
+      sovereign_net:
+        ipv4_address: 172.28.0.42
+
+  raidan_mail:
+    image: analogic/poste.io:latest
+    container_name: raidan_mail
+    restart: always
+    environment:
+      - HTTPS=OFF
+      - DISABLE_CLAMAV=TRUE
+    volumes:
+      - mail_data:/data
+    ports:
+      - "25:25"
+      - "110:110"
+      - "143:143"
+      - "587:587"
+      - "993:993"
+      - "995:995"
+    networks:
+      sovereign_net:
+        ipv4_address: 172.28.0.50

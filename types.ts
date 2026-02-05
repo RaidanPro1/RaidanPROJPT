@@ -1,5 +1,4 @@
 
-
 export type ServiceStatus = 'running' | 'stopped' | 'restarting' | 'error';
 
 export interface Service {
@@ -40,6 +39,34 @@ export interface Tenant {
   ram_usage: number;
   services: string[];
   created_at: string;
+  email_config?: {
+    enabled: boolean;
+    inbound_address: string[];
+    forward_to: string;
+    smtp_server: string;
+    smtp_user: string;
+    smtp_port: number;
+    dns_status: 'verified' | 'pending' | 'failed';
+  };
+  // NEW: Publishing Settings
+  publishing_config?: {
+    wordpress_url?: string;
+    wordpress_api_key?: string;
+    ghost_url?: string;
+    ghost_admin_key?: string;
+    social_connections?: {
+      facebook: boolean;
+      twitter: boolean;
+      linkedin: boolean;
+    };
+  };
+  // NEW: Hosting & DNS Specs
+  hosting_spec?: {
+    plan: string;
+    storage_limit: string;
+    bandwidth_limit: string;
+    region: string;
+  };
 }
 
 export interface SystemMetrics {
@@ -64,29 +91,30 @@ export type ActiveModule =
   | 'core_settings'
   | 'terminal'
   | 'tool_identity'
-  | 'data_feeds' // New module for the Data Feeds Manager
+  | 'data_feeds'
   | 'governance'
-  | 'profile'; // NEW: For User Profile Page
+  | 'profile'
+  | 'public_chat'
+  | 'predictive_hub'
+  | 'seo_manager'
+  | 'marketing_editor'; // NEW
 
 export interface ModuleInfo {
-  // FIX: Replaced undefined type 'ModuleType' with 'ActiveModule'.
   id: ActiveModule;
   title: string;
   icon: string;
   description: string;
 }
 
-// NEW: Type for dynamic module/tool identity from backend
 export interface ModuleRegistryInfo {
   module_key: string;
   display_name: string;
   description: string;
-  icon_name: string; // Can be a Lucide icon name or a URL path
+  icon_name: string; 
   is_active: boolean;
   route_path: string;
 }
 
-// Type for the Data Feeds Manager
 export interface DataSource {
   id: number;
   name: string;
@@ -96,4 +124,23 @@ export interface DataSource {
   last_status: string | null;
   last_run_log: string | null;
   last_crawled_at: string | null;
+}
+
+export interface SeoConfig {
+  siteTitle: string;
+  description: string;
+  keywords: string[];
+  ogImage: string;
+  twitterHandle?: string;
+  robotsTxt: string;
+  sitemapEnabled: boolean;
+}
+
+// NEW: Marketing Landing Page Config
+export interface LandingPageConfig {
+  heroTitle: { ar: string; en: string };
+  heroSubtitle: { ar: string; en: string };
+  features: Array<{ title: { ar: string; en: string }; desc: { ar: string; en: string }; icon: string }>;
+  videoUrl?: string;
+  showPricing: boolean;
 }

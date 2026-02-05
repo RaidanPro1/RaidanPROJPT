@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Zap, ShieldCheck, Palette, Wrench, Database, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Zap, ShieldCheck, Palette, Wrench, Database, User, Globe, MessageSquare, PenTool, Brain } from 'lucide-react';
 import { useBranding } from '../context/BrandingContext';
 import { useToolRegistry } from '../context/ToolRegistryContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useSettings } from '../context/SettingsContext'; // Need this for Role check
 import { IconRenderer } from './IconRenderer';
 
 interface SidebarProps {
@@ -17,6 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule, isOpen
   const { theme } = useBranding();
   const { getToolInfo } = useToolRegistry();
   const { t, language } = useLanguage();
+  const { userRole } = useSettings();
 
   const menuClass = (id: string) => `w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 mb-1.5 group border border-transparent ${
     activeModule === id 
@@ -26,7 +28,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule, isOpen
   
   const getMenuItem = (key: string, defaultIcon: string, defaultName: string) => {
     const info = getToolInfo(key);
-    // Use dynamic name from registry, fallback to default. The `t` function will return the key if no translation is found.
     return {
       key,
       name: t(info?.display_name || defaultName, info?.display_name || defaultName),
@@ -35,7 +36,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule, isOpen
   };
 
   const centralControl = [
-    getMenuItem('dashboard', 'LayoutDashboard', 'الرئيسية (System Hub)'),
+    getMenuItem('dashboard', 'LayoutDashboard', 'الرئيسية (System Hub)',),
+    getMenuItem('public_chat', 'MessageSquare', 'المحادثة السيادية'), 
+    getMenuItem('predictive_hub', 'Globe', 'بوابة المؤشرات'), 
     getMenuItem('root_command', 'TowerControl', 'برج المراقبة (Root)'),
     getMenuItem('governance', 'BookText', 'عقيدة النظام'),
   ];
@@ -51,6 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule, isOpen
 
   const identityProvisioning = [
       getMenuItem('branding', 'Palette', 'تخصيص الواجهة'),
+      getMenuItem('seo_manager', 'Search', 'إدارة SEO'), 
       getMenuItem('tenants', 'Users', 'إدارة المستأجرين'),
       getMenuItem('tool_identity', 'Wrench', 'هوية الأدوات'),
   ];
@@ -143,10 +147,26 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule, isOpen
               {isOpen && <span className="text-xs uppercase tracking-wide truncate">{item.name}</span>}
             </button>
           ))}
+          {/* Marketing Editor - Root Only */}
+          {userRole === 'root' && (
+             <button key="marketing_editor" onClick={() => setActiveModule('marketing_editor')} className={menuClass('marketing_editor')}>
+               <PenTool size={20} />
+               {isOpen && <span className="text-xs uppercase tracking-wide truncate">{t('marketing_editor_title')}</span>}
+             </button>
+          )}
         </div>
 
         <div className="mb-8">
           {isOpen && <p className="px-3 text-[10px] font-black text-text-subtle uppercase mb-4 tracking-[0.2em]">{t('sidebar_section_core')}</p>}
+          
+          {/* New Model Forge Link - Root Only */}
+          {userRole === 'root' && (
+             <button key="model_forge" onClick={() => setActiveModule('model_forge')} className={menuClass('model_forge')}>
+               <Brain size={20} />
+               {isOpen && <span className="text-xs uppercase tracking-wide truncate">ورشة النماذج (Model Forge)</span>}
+             </button>
+          )}
+
           {coreModules.map(item => (
             <button key={item.key} onClick={() => setActiveModule(item.key)} className={menuClass(item.key)}>
               <IconRenderer iconName={item.icon} />

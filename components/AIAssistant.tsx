@@ -1,5 +1,6 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, Sparkles, AlertTriangle, Scale, Book, Search, ShieldCheck, Share2, FileSearch, FunctionSquare } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Sparkles, AlertTriangle, Scale, Book, Search, ShieldCheck, Share2, FileSearch, FunctionSquare, Globe } from 'lucide-react';
 import { GoogleGenAI, FunctionDeclaration, Type } from '@google/genai';
 import { useSettings } from '../context/SettingsContext';
 
@@ -27,7 +28,7 @@ const AIAssistant: React.FC = () => {
   const [messages, setMessages] = useState<{role: 'user' | 'assistant' | 'tool', content: string, metadata?: any}[]>([
     { 
       role: 'assistant', 
-      content: 'مرحباً بك في وحدة الاستشارة والتحقيق السيادية. أنا خبير "ريدان"، مدمج بالكامل مع أرشيف Aleph و Yemen Core. هل ترغب في الاستعلام عن بيانات إحصائية أو تتبع كيان مشبوه؟' 
+      content: 'مرحباً بك في وحدة الاستشارة والتحقيق السيادية. أنا خبير "ريدان"، مدمج بالكامل مع أرشيف Aleph و خدمات Google المؤمنة. كيف يمكنني مساعدتك؟' 
     }
   ]);
   const [input, setInput] = useState('');
@@ -83,19 +84,33 @@ const AIAssistant: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Use the API key from environment variable, falling back to process.env if available in context logic
+      const apiKey = process.env.API_KEY; 
+      const ai = new GoogleGenAI({ apiKey: apiKey });
       
+      // CONFIGURATION GOVERNANCE:
+      // Inject the Sovereign Doctrine defined by Root in GovernancePage
+      const sovereignInstruction = settings.systemDoctrine;
+
       const genAIConfig: any = {
-        systemInstruction: settings.systemDoctrine, // Use doctrine from Governance page
+        systemInstruction: sovereignInstruction,
         tools: [{functionDeclarations: systemTools}], // MCP Tools
       };
       
-      if (settings.searchGrounding) {
+      // Feature Flag: Enable Google Search Grounding if Root permitted it
+      if (settings.googleConfig.enableSearchGrounding) {
         genAIConfig.tools.push({googleSearch: {}});
       }
 
+      // Feature Flag: Enable Thinking if budget is allocated
+      if (settings.googleConfig.thinkingBudget > 0) {
+          genAIConfig.thinkingConfig = { thinkingBudget: settings.googleConfig.thinkingBudget };
+      }
+
+      const modelName = settings.googleConfig.thinkingBudget > 0 ? 'gemini-2.5-flash-thinking-preview-0121' : 'gemini-3-pro-preview';
+
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: modelName,
         contents: userMsg,
         config: genAIConfig
       });
@@ -107,10 +122,8 @@ const AIAssistant: React.FC = () => {
         if (toolResult) {
             // Send the tool response back to the model
             const finalResponse = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: modelName,
                 // FIX: The `contents` array for a multi-turn request must be an array of `Content` objects.
-                // The user's prompt (string) and the tool response (Part) are wrapped in `Content` objects
-                // with their respective 'user' and 'tool' roles to form a valid conversation history.
                 contents: [
                   { role: 'user', parts: [{ text: userMsg }] },
                   response.candidates[0].content, // Model's previous turn with the function call
@@ -118,13 +131,33 @@ const AIAssistant: React.FC = () => {
                 ],
                 config: genAIConfig
             });
-            setMessages(prev => [...prev, { role: 'assistant', content: finalResponse.text || "تم تنفيذ الأداة." }]);
+            
+            // Check for grounding in the final response
+            let groundingText = "";
+            if (finalResponse.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+                const chunks = finalResponse.candidates[0].groundingMetadata.groundingChunks;
+                const urls = chunks.map((c: any) => c.web?.uri).filter(Boolean);
+                if (urls.length > 0) {
+                    groundingText = "\n\n**المصادر الموثقة (Google Grounding):**\n" + urls.map((u: string) => `- [${new URL(u).hostname}](${u})`).join("\n");
+                }
+            }
+
+            setMessages(prev => [...prev, { role: 'assistant', content: (finalResponse.text || "تم تنفيذ الأداة.") + groundingText }]);
         }
       } else {
-        // Normal response
+        // Normal response with Grounding check
+        let groundingText = "";
+        if (response.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+            const chunks = response.candidates[0].groundingMetadata.groundingChunks;
+            const urls = chunks.map((c: any) => c.web?.uri).filter(Boolean);
+            if (urls.length > 0) {
+                groundingText = "\n\n**المصادر الموثقة (Google Grounding):**\n" + urls.map((u: string) => `- [${new URL(u).hostname}](${u})`).join("\n");
+            }
+        }
+
         setMessages(prev => [...prev, { 
           role: 'assistant', 
-          content: response.text || "عذراً، تعذر الوصول لبروتوكول التحليل الاستقصائي حالياً."
+          content: (response.text || "عذراً، تعذر الوصول لبروتوكول التحليل الاستقصائي حالياً.") + groundingText
         }]);
       }
 
@@ -158,7 +191,9 @@ const AIAssistant: React.FC = () => {
                 <h3 className="font-black text-text-primary text-sm uppercase tracking-widest font-tajawal leading-none">مستشار ريدان الاستقصائي</h3>
                 <div className="flex items-center gap-1.5 mt-1.5">
                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-[9px] text-text-subtle font-bold uppercase tracking-widest">Yemen Core + MCP Active</span>
+                  <span className="text-[9px] text-text-subtle font-bold uppercase tracking-widest">
+                    {settings.googleConfig.enableSearchGrounding ? "Google Grounding ON" : "Local Context Only"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -181,7 +216,7 @@ const AIAssistant: React.FC = () => {
                         ? 'bg-brand-primary text-white rounded-br-none' 
                         : 'bg-panel text-text-secondary border border-border-subtle rounded-bl-none'
                     }`}>
-                      {m.content}
+                      <div dangerouslySetInnerHTML={{__html: m.content.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/- \[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-blue-500 hover:underline flex items-center gap-1 mt-1"><Globe size={10}/> $1</a>')}} />
                     </div>
                 )}
               </div>
@@ -190,6 +225,8 @@ const AIAssistant: React.FC = () => {
               <div className="flex justify-start">
                 <div className="bg-panel p-4 rounded-2xl border border-border-subtle flex gap-1.5">
                   <div className="w-1.5 h-1.5 bg-brand-accent rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-brand-accent rounded-full animate-bounce delay-75"></div>
+                  <div className="w-1.5 h-1.5 bg-brand-accent rounded-full animate-bounce delay-150"></div>
                 </div>
               </div>
             )}

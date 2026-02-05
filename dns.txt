@@ -1,0 +1,92 @@
+
+# ==============================================================================
+# 🇾🇪 RAIDAN PRO SOVEREIGN DNS ARCHITECTURE (v3.1)
+# ==============================================================================
+# ملاحظة هامة: يتم تحديد {{SERVER_IP}} تلقائياً أثناء عملية التثبيت (Installation).
+# خيار البريد: يتم توجيه سجلات البريد بناءً على خيار التثبيت (Sovereign Local أو External Relay).
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. PUBLIC DNS RECORDS (Cloudflare / Public Access)
+# ------------------------------------------------------------------------------
+
+# --- A. Infrastructure & Root ---
+# النطاق الأساسي (محجوز لموقع الشركة التعريفي لاحقاً)
+@                   A       {{SERVER_IP}}  (Points to Nginx Landing Page Container)
+www                 CNAME   raidan.pro
+
+# الخادم الرئيسي (نقطة الدخول لجميع الخدمات الفرعية)
+gateway             A       {{SERVER_IP}}  (Traefik Reverse Proxy Entrypoint)
+
+# --- B. User Interfaces (Frontends) ---
+ai                  CNAME   gateway.raidan.pro
+console             CNAME   gateway.raidan.pro
+indicators          CNAME   gateway.raidan.pro
+
+# --- C. Core Services & APIs (Backends) ---
+api                 CNAME   gateway.raidan.pro
+sso                 CNAME   gateway.raidan.pro
+core                CNAME   gateway.raidan.pro
+search              CNAME   gateway.raidan.pro
+
+# --- D. Specialized Units (Tools) ---
+lab                 CNAME   gateway.raidan.pro
+maps                CNAME   gateway.raidan.pro
+news                CNAME   gateway.raidan.pro
+viz                 CNAME   gateway.raidan.pro
+shell               CNAME   gateway.raidan.pro
+
+# --- E. Operations & Infrastructure (DevOps) ---
+ops                 CNAME   gateway.raidan.pro
+s3                  CNAME   gateway.raidan.pro
+cdn                 CNAME   gateway.raidan.pro
+
+# --- F. Communication (Hybrid Mail Configuration) ---
+# [OPTION 1: Local Sovereign Mail - Mailu]
+# If selected during install:
+# mail              A       {{SERVER_IP}}
+# smtp              CNAME   mail.raidan.pro
+# imap              CNAME   mail.raidan.pro
+# webmail           CNAME   mail.raidan.pro
+# @                 TXT     "v=spf1 mx a:mail.raidan.pro -all"
+
+# [OPTION 2: External Relay / Provider]
+# If selected during install (e.g., Google Workspace, AWS SES, SendGrid):
+# mail              CNAME   ghs.googlehosted.com. (Example)
+# smtp              CNAME   smtp-relay.gmail.com. (Example)
+# @                 TXT     "v=spf1 include:_spf.google.com -all" (Example)
+
+
+# ------------------------------------------------------------------------------
+# 2. INTERNAL DNS & IP MAPPING (Docker Sovereign Network)
+# ------------------------------------------------------------------------------
+# Subnet: 172.28.0.0/16
+# Gateway: 172.28.0.1
+# تم تثبيت الآيبيهات لمنع "تضارب العناوين" ولتسهيل الاتصال بين الحاويات
+# ------------------------------------------------------------------------------
+
+# --- Layer 1: Gateways & Proxies (172.28.0.2 - 172.28.0.9) ---
+172.28.0.2      traefik.internal        # Reverse Proxy (The Gatekeeper)
+172.28.0.3      authentik.internal      # Auth Server
+
+# --- Layer 2: Databases (The Vault) (172.28.0.10 - 172.28.0.19) ---
+172.28.0.10     postgres.internal       # Main DB (User Data)
+172.28.0.11     yemencore.db.internal   # Knowledge Graph DB (pgvector)
+172.28.0.12     redis.internal          # Cache Layer
+172.28.0.13     minio.internal          # Object Storage (S3)
+
+# --- Layer 3: Intelligence Engines (172.28.0.20 - 172.28.0.29) ---
+172.28.0.20     ollama.internal         # LLM Engine (GPU/CPU)
+172.28.0.21     ragflow.internal        # RAG Processing
+172.28.0.22     deepsafe.internal       # Deepfake Detection Worker
+172.28.0.23     whisper.internal        # Audio Transcription Worker
+
+# --- Layer 4: Application Logic (172.28.0.30 - 172.28.0.39) ---
+172.28.0.30     backend.internal        # Main Orchestrator API
+172.28.0.31     yemencore.api.internal  # Data Warehouse API
+172.28.0.32     frontend.internal       # Next.js UI Renderer
+
+# --- Layer 5: Specialized Tools (172.28.0.40 - 172.28.0.50) ---
+172.28.0.40     maps.internal           # TileServer-GL
+172.28.0.41     superset.internal       # Visualization Engine
+172.28.0.42     searxng.internal        # Search Aggregator

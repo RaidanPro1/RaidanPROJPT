@@ -1,110 +1,137 @@
 
 import React, { useState } from 'react';
-import { X, Save, History, SlidersHorizontal, BarChart, HardDrive, Shield, Power } from 'lucide-react';
+import { X, Save, History, SlidersHorizontal, Shield, Loader2, Check } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import ToolSettingsCard from './ToolSettingsCard';
+import { UserRole } from '../context/SettingsContext';
 
 interface ToolSettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    tool: any; // Simplified for demo
-    userRole: 'user' | 'root';
+    tool: any; 
+    userRole: UserRole;
 }
-
-const SliderControl: React.FC<{ label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void }> = 
-({ label, value, min, max, step, onChange }) => (
-    <div className="space-y-2">
-        <div className="flex justify-between items-center">
-            <label className="text-[10px] font-black text-text-subtle uppercase tracking-widest">{label}</label>
-            <span className="text-xs font-mono font-bold text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded">{value}</span>
-        </div>
-        <input 
-            type="range"
-            min={min} max={max} step={step} value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
-            className="w-full h-2 bg-canvas rounded-lg appearance-none cursor-pointer accent-brand-primary"
-        />
-    </div>
-);
-
-const ToggleControl: React.FC<{ label: string; enabled: boolean; onToggle: () => void }> = ({ label, enabled, onToggle }) => (
-    <div className="flex items-center justify-between p-3 bg-canvas rounded-lg border border-border-subtle">
-        <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">{label}</label>
-        <button onClick={onToggle} className={`w-12 h-6 rounded-full p-1 flex items-center transition-colors ${enabled ? 'bg-brand-primary justify-end' : 'bg-border-subtle justify-start'}`}>
-            <div className="w-4 h-4 bg-white rounded-full shadow-md"></div>
-        </button>
-    </div>
-);
 
 const ToolSettingsModal: React.FC<ToolSettingsModalProps> = ({ isOpen, onClose, tool, userRole }) => {
     const { t } = useLanguage();
-    
-    // Local state for settings, initialized from tool props
-    const [settings, setSettings] = useState(tool.settings);
+    const [settings, setSettings] = useState(tool.settings || { user: {}, root: {} });
+    const [isSaving, setIsSaving] = useState(false);
+    const [showToast, setShowToast] = useState(false);
 
     if (!isOpen) return null;
 
-    const handleSliderChange = (key: string, value: number) => {
-        setSettings((prev: any) => ({ ...prev, user: { ...prev.user, [key]: { ...prev.user[key], value } } }));
+    const handleUserUpdate = (key: string, value: any) => {
+        setSettings((prev: any) => ({
+            ...prev,
+            user: { ...prev.user, [key]: { ...prev.user[key], value } }
+        }));
     };
-    
-    const handleRootSliderChange = (key: string, value: number) => {
-        setSettings((prev: any) => ({ ...prev, root: { ...prev.root, [key]: { ...prev.root[key], value } } }));
+
+    const handleRootUpdate = (key: string, value: any) => {
+        setSettings((prev: any) => ({
+            ...prev,
+            root: { ...prev.root, [key]: { ...prev.root[key], value } }
+        }));
     };
-    
-    const handleToggle = (key: string) => {
-        setSettings((prev: any) => ({ ...prev, root: { ...prev.root, [key]: { ...prev.root[key], value: !prev.root[key].value } } }));
+
+    const saveChanges = () => {
+        setIsSaving(true);
+        setTimeout(() => {
+            setIsSaving(false);
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        }, 1000);
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-panel/70 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-panel rounded-2xl border border-border-subtle shadow-elevation w-full max-w-2xl overflow-hidden">
-                <div className="p-6 border-b border-border-subtle flex justify-between items-center">
-                    <div>
-                        <h3 className="font-black text-text-primary uppercase tracking-widest">{t('modal_settings_title')}</h3>
-                        <p className="text-xs text-brand-primary font-bold">{tool.display_name}</p>
-                    </div>
-                    <button onClick={onClose} className="p-2 text-text-subtle hover:text-text-primary transition-colors rounded-lg"><X size={18} /></button>
-                </div>
-
-                <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                    {/* User Preferences Section */}
-                    <section>
-                        <h4 className="text-xs font-black text-text-subtle uppercase tracking-widest border-b border-border-subtle pb-3 mb-6 flex items-center gap-3"><SlidersHorizontal size={14} /> {t('modal_user_prefs')}</h4>
-                        <div className="space-y-6">
-                            {Object.entries(settings.user).map(([key, setting]: [string, any]) => (
-                                <SliderControl key={key} label={t(setting.label, setting.label)} value={setting.value} min={setting.min} max={setting.max} step={setting.step} onChange={(v) => handleSliderChange(key, v)} />
-                            ))}
-                             <button className="w-full text-left p-4 rounded-xl border border-border-subtle bg-canvas hover:border-red-500/50 hover:text-red-600 transition-all flex items-center gap-4 text-red-600/70">
-                                <History size={20} />
-                                <span className="text-xs font-bold uppercase tracking-wider">{t('modal_clear_history')}</span>
-                            </button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-panel rounded-2xl border border-border-subtle shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+                
+                {/* Modal Header */}
+                <div className="p-6 border-b border-border-subtle flex justify-between items-center bg-slate-900/50">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-brand-primary/10 rounded-lg text-brand-primary border border-brand-primary/20">
+                            <SlidersHorizontal size={20} />
                         </div>
-                    </section>
-
-                    {/* Root Options Section (God Mode) */}
-                    {userRole === 'root' && (
-                         <section className="mt-8 pt-8 border-t-4 border-dashed border-border-subtle">
-                             <h4 className="text-xs font-black text-brand-accent uppercase tracking-widest border-b border-border-subtle pb-3 mb-6 flex items-center gap-3"><Shield size={14} /> {t('modal_root_options')}</h4>
-                             <div className="space-y-8">
-                                <SliderControl label={t(settings.root.ramLimit.label)} value={settings.root.ramLimit.value} min={settings.root.ramLimit.min} max={settings.root.ramLimit.max} step={settings.root.ramLimit.step} onChange={(v) => handleRootSliderChange('ramLimit', v)} />
-                                <ToggleControl label={t(settings.root.maintenanceMode.label)} enabled={settings.root.maintenanceMode.value} onToggle={() => handleToggle('maintenanceMode')} />
-                                
-                                <div className="p-4 bg-canvas rounded-xl border border-border-subtle">
-                                    <h5 className="text-[10px] font-black text-text-subtle uppercase tracking-widest mb-3">{t('modal_usage_monitor')}</h5>
-                                    <div className="h-24 bg-panel border border-border-subtle rounded-lg flex items-end p-2 gap-1">
-                                        {/* Mock Chart */}
-                                        {[40, 60, 50, 80, 75, 90, 60].map((h, i) => <div key={i} className="flex-1 bg-brand-primary/50 rounded-t-sm" style={{height: `${h}%`}}></div>)}
-                                    </div>
-                                </div>
-                             </div>
-                         </section>
-                    )}
+                        <div>
+                            <h3 className="text-lg font-black text-text-primary uppercase tracking-widest">{t('modal_settings_title')}</h3>
+                            <p className="text-xs text-brand-accent font-bold mt-0.5">{tool.display_name} Configuration Matrix</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-2 text-text-subtle hover:text-white transition-colors rounded-lg bg-white/5 hover:bg-white/10">
+                        <X size={20} />
+                    </button>
                 </div>
 
-                <div className="p-6 bg-canvas/80 border-t border-border-subtle flex justify-end">
-                    <button className="flex items-center gap-3 bg-brand-primary hover:bg-brand-primary-hover text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95">
-                        <Save size={16} /> {t('modal_save_changes')}
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-8 bg-canvas">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* User Column */}
+                        <div className="space-y-6">
+                            <h4 className="text-xs font-black text-text-subtle uppercase tracking-[0.2em] mb-4">Preference Layer</h4>
+                            {settings.user && Object.keys(settings.user).length > 0 ? (
+                                <ToolSettingsCard 
+                                    title={t('modal_user_prefs')} 
+                                    settings={settings.user} 
+                                    onUpdate={handleUserUpdate} 
+                                    variant="user"
+                                />
+                            ) : (
+                                <div className="p-6 border border-dashed border-border-subtle rounded-xl text-center text-text-subtle text-xs">No user preferences available for this tool.</div>
+                            )}
+                        </div>
+
+                        {/* Root Column */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Shield size={14} className="text-red-500" />
+                                <h4 className="text-xs font-black text-text-subtle uppercase tracking-[0.2em]">Sovereign Control Layer</h4>
+                            </div>
+                            
+                            {userRole === 'root' ? (
+                                settings.root && Object.keys(settings.root).length > 0 ? (
+                                    <ToolSettingsCard 
+                                        title={t('modal_root_options')} 
+                                        settings={settings.root} 
+                                        onUpdate={handleRootUpdate} 
+                                        variant="root" 
+                                    />
+                                ) : (
+                                    <div className="p-6 border border-dashed border-border-subtle rounded-xl text-center text-text-subtle text-xs">No root configurations available.</div>
+                                )
+                            ) : (
+                                <div className="h-full bg-slate-950/50 border border-slate-800 rounded-2xl flex flex-col items-center justify-center p-8 text-center gap-3">
+                                    <Shield size={32} className="text-slate-700" />
+                                    <p className="text-sm font-bold text-slate-500">Access Restricted</p>
+                                    <p className="text-[10px] text-slate-600 uppercase tracking-widest">Root privileges required</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div className="p-6 bg-panel border-t border-border-subtle flex justify-between items-center">
+                    <button className="text-xs font-bold text-text-subtle hover:text-red-500 transition-colors flex items-center gap-2">
+                        <History size={14} />
+                        <span>{t('modal_clear_history')}</span>
                     </button>
+                    
+                    <div className="flex items-center gap-4">
+                        {showToast && (
+                            <div className="flex items-center gap-2 text-[10px] font-black text-green-500 uppercase animate-in fade-in slide-in-from-right-4">
+                                <Check size={14} /> Changes Applied
+                            </div>
+                        )}
+                        <button 
+                            onClick={saveChanges} 
+                            disabled={isSaving}
+                            className="flex items-center gap-3 bg-brand-primary hover:bg-brand-primary-hover text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                            {isSaving ? 'Processing...' : t('modal_save_changes')}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Wrench, Edit, Save, X, Upload, RefreshCcw, Loader2 } from 'lucide-react';
 import { useToolRegistry } from '../context/ToolRegistryContext';
@@ -66,7 +67,7 @@ const ToolIdentityManager: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {Array.from(registry.values()).map(module => (
+        {Array.from(registry.values()).map((module: ModuleRegistryInfo) => (
           <div key={module.module_key} className="glass-panel p-6 rounded-2xl border-slate-800 shadow-tactical flex flex-col justify-between group">
             <div className="flex items-start justify-between">
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 shadow-inner group-hover:border-yemenGold/20 transition-all">

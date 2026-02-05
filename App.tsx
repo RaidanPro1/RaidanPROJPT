@@ -6,7 +6,7 @@ import {
   TowerControl, Mic2, LayoutDashboard, ChevronRight,
   Database, Globe, Lock, Cpu, Settings, BookText,
   AlertTriangle, CheckCircle2, Info, X, Wrench, DatabaseZap,
-  Settings2
+  Settings2, MessageSquare
 } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -15,6 +15,7 @@ import ToolSettingsModal from './components/ToolSettingsModal';
 import SystemOverview from './components/SystemOverview';
 import WorkflowManager from './components/WorkflowManager';
 import TenantManager from './components/TenantManager';
+import TenantDashboard from './components/TenantDashboard'; // NEW
 import ForensicsLab from './components/ForensicsLab';
 import PredictiveCenter from './components/PredictiveCenter';
 import DialectEngine from './components/DialectEngine';
@@ -29,7 +30,14 @@ import ToolIdentityManager from './components/ToolIdentityManager';
 import TerminalConsole from './components/TerminalConsole';
 import DataFeedsManager from './components/DataFeedsManager';
 import ProfilePage from './components/ProfilePage';
-import { Service, ActiveModule } from './types';
+import PublicChatInterface from './components/PublicChatInterface';
+import PredictiveHub from './components/PredictiveHub';
+import SeoManager from './components/SeoManager';
+import MarketingLanding from './components/MarketingLanding'; // NEW
+import LandingPageEditor from './components/LandingPageEditor'; // NEW
+import LoginPage from './components/LoginPage'; // NEW
+import ModelForge from './components/ModelForge'; // NEW
+import { Service, ActiveModule, Tenant } from './types';
 import { INITIAL_SERVICES } from './constants';
 import { useBranding } from './context/BrandingContext';
 import { useToolRegistry } from './context/ToolRegistryContext';
@@ -37,6 +45,7 @@ import { useSettings } from './context/SettingsContext';
 import AIAssistant from './components/AIAssistant';
 
 const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeModule, setActiveModule] = useState<ActiveModule>('dashboard');
   const [services] = useState<Service[]>(INITIAL_SERVICES);
   const { getToolInfo } = useToolRegistry();
@@ -45,7 +54,88 @@ const App: React.FC = () => {
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [selectedTool, setSelectedTool] = useState<any>(null);
+  
+  // Temporary Tenant for Demo
+  const mockTenant: Tenant = {
+    id: 'demo-1',
+    name: 'مؤسسة الصحافة الحديثة',
+    domain: 'modernpress.net',
+    status: 'active',
+    cf_status: 'connected',
+    cpu_usage: 45,
+    ram_usage: 2048,
+    services: ['wordpress', 'ghost'],
+    created_at: '2025-01-01',
+    publishing_config: { wordpress_url: 'https://demo.wp.com', social_connections: { facebook: true, twitter: false, linkedin: true } },
+    email_config: { 
+        enabled: true, 
+        inbound_address: ['info@modernpress.net'], 
+        forward_to: 'admin@raidan.pro', 
+        smtp_server: 'mail.raidan.pro', 
+        smtp_user: 'admin@raidan.pro', 
+        smtp_port: 587, 
+        dns_status: 'verified' 
+    }
+  };
 
+  if (!isLoggedIn) {
+     // Check if user is visiting landing page explicitly (URL logic simplified here)
+     const showLanding = window.location.pathname === '/landing';
+     if(showLanding) return <MarketingLanding />;
+     
+     return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
+  }
+
+  const renderContent = () => {
+    switch (activeModule) {
+      case 'dashboard':
+        return (
+          <div className="space-y-8 animate-in fade-in duration-700">
+            <SystemOverview services={services} />
+            <div className="space-y-6">
+              <h3 className="text-sm font-black text-text-primary uppercase tracking-[0.2em]">ترسانة العمليات السيادية</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                 <ArsenalCard toolKey="public_chat" onClick={() => setActiveModule('public_chat')} onSettingsClick={() => openToolSettings('public_chat')} />
+                 <ArsenalCard toolKey="smart_newsroom" onClick={() => setActiveModule('smart_newsroom')} onSettingsClick={() => openToolSettings('smart_newsroom')} />
+                 <ArsenalCard toolKey="forensics_lab" onClick={() => setActiveModule('forensics_lab')} onSettingsClick={() => openToolSettings('forensics_lab')} />
+                 <ArsenalCard toolKey="predictive_hub" onClick={() => setActiveModule('predictive_hub')} onSettingsClick={() => openToolSettings('predictive_hub')} />
+                 <ArsenalCard toolKey="geo_int_station" onClick={() => setActiveModule('geo_int_station')} onSettingsClick={() => openToolSettings('geo_int_station')} />
+                 <ArsenalCard toolKey="predictive_center" onClick={() => setActiveModule('predictive_center')} onSettingsClick={() => openToolSettings('predictive_center')} />
+                 <ArsenalCard toolKey="dialect_engine" onClick={() => setActiveModule('dialect_engine')} onSettingsClick={() => openToolSettings('dialect_engine')} />
+                 <ArsenalCard toolKey="data_journalism" onClick={() => setActiveModule('data_journalism')} onSettingsClick={() => openToolSettings('data_journalism')} />
+                 <ArsenalCard toolKey="root_command" onClick={() => setActiveModule('root_command')} onSettingsClick={() => openToolSettings('root_command')} />
+                 <ArsenalCard toolKey="governance" onClick={() => setActiveModule('governance')} onSettingsClick={() => openToolSettings('governance')} />
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'public_chat': return <PublicChatInterface />;
+      case 'predictive_hub': return <PredictiveHub />;
+      case 'marketing_editor': return <LandingPageEditor />;
+      case 'seo_manager': return <SeoManager />;
+      case 'smart_newsroom': return <SmartNewsroom />;
+      case 'forensics_lab': return <ForensicsLab />;
+      case 'predictive_center': return <PredictiveCenter />;
+      case 'dialect_engine': return <DialectEngine />;
+      case 'geo_int_station': return <GeoIntStation />;
+      case 'data_journalism': return <DataJournalism />;
+      case 'root_command': return <RootCommandCenter />;
+      case 'governance': return <GovernancePage />;
+      case 'branding': return <BrandingPage />;
+      case 'tenants': return <TenantDashboard tenant={mockTenant} />;
+      case 'core_settings': return <SettingsPage />;
+      case 'tool_identity': return <ToolIdentityManager />;
+      case 'terminal': return <TerminalConsole />;
+      case 'data_feeds': return <DataFeedsManager />;
+      case 'profile': return <ProfilePage />;
+      // @ts-ignore
+      case 'model_forge': return <ModelForge />; // Added ModelForge
+      default: return <div className="p-20 text-center bg-panel border-2 border-dashed border-border-subtle rounded-2xl text-text-subtle font-black uppercase tracking-widest">الوحدة قيد التجهيز...</div>;
+    }
+  };
+
+  // Helper functions
   const showToast = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
     setToast({ message, type, visible: true });
     setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 5000);
@@ -53,11 +143,10 @@ const App: React.FC = () => {
 
   const openToolSettings = (toolKey: string) => {
     const tool = getToolInfo(toolKey);
-    if (tool && (tool as any).settings) { // Assuming settings exist
+    if (tool && (tool as any).settings) { 
       setSelectedTool(tool);
       setIsSettingsModalOpen(true);
     } else {
-        // Mock settings for tools not in the new registry for demo purposes
         const mockTool = {
             display_name: tool?.display_name || "Default Tool",
             settings: {
@@ -70,53 +159,10 @@ const App: React.FC = () => {
     }
   };
 
-
-  const renderContent = () => {
-    switch (activeModule) {
-      case 'dashboard':
-        return (
-          <div className="space-y-8 animate-in fade-in duration-700">
-            <SystemOverview services={services} />
-            <div className="space-y-6">
-              <h3 className="text-sm font-black text-text-primary uppercase tracking-[0.2em]">ترسانة العمليات السيادية</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                 <ArsenalCard toolKey="smart_newsroom" onClick={() => setActiveModule('smart_newsroom')} onSettingsClick={() => openToolSettings('smart_newsroom')} />
-                 <ArsenalCard toolKey="forensics_lab" onClick={() => setActiveModule('forensics_lab')} onSettingsClick={() => openToolSettings('forensics_lab')} />
-                 <ArsenalCard toolKey="geo_int_station" onClick={() => setActiveModule('geo_int_station')} onSettingsClick={() => openToolSettings('geo_int_station')} />
-                 <ArsenalCard toolKey="predictive_center" onClick={() => setActiveModule('predictive_center')} onSettingsClick={() => openToolSettings('predictive_center')} />
-                 <ArsenalCard toolKey="dialect_engine" onClick={() => setActiveModule('dialect_engine')} onSettingsClick={() => openToolSettings('dialect_engine')} />
-                 <ArsenalCard toolKey="data_journalism" onClick={() => setActiveModule('data_journalism')} onSettingsClick={() => openToolSettings('data_journalism')} />
-                 <ArsenalCard toolKey="root_command" onClick={() => setActiveModule('root_command')} onSettingsClick={() => openToolSettings('root_command')} />
-                 <ArsenalCard toolKey="governance" onClick={() => setActiveModule('governance')} onSettingsClick={() => openToolSettings('governance')} />
-              </div>
-            </div>
-          </div>
-        );
-      
-      case 'smart_newsroom': return <SmartNewsroom />;
-      case 'forensics_lab': return <ForensicsLab />;
-      case 'predictive_center': return <PredictiveCenter />;
-      case 'dialect_engine': return <DialectEngine />;
-      case 'geo_int_station': return <GeoIntStation />;
-      case 'data_journalism': return <DataJournalism />;
-      case 'root_command': return <RootCommandCenter />;
-      case 'governance': return <GovernancePage />;
-      case 'branding': return <BrandingPage />;
-      case 'tenants': return <TenantManager />;
-      case 'core_settings': return <SettingsPage />;
-      case 'tool_identity': return <ToolIdentityManager />;
-      case 'terminal': return <TerminalConsole />;
-      case 'data_feeds': return <DataFeedsManager />;
-      case 'profile': return <ProfilePage />;
-      default: return <div className="p-20 text-center bg-panel border-2 border-dashed border-border-subtle rounded-2xl text-text-subtle font-black uppercase tracking-widest">الوحدة قيد التجهيز...</div>;
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-canvas text-text-primary font-tajawal overflow-hidden">
       <Header />
       <div className="flex flex-1 overflow-hidden">
-        {/* The sidebar is kept as a primary navigation element as per UX best practices for complex dashboards */}
         <Sidebar activeModule={activeModule} setActiveModule={setActiveModule} isOpen={true} toggle={() => {}} />
         <main className="flex-1 overflow-y-auto custom-scrollbar relative">
           <div className="p-8 max-w-[1800px] mx-auto pb-24">
@@ -142,7 +188,7 @@ const App: React.FC = () => {
   );
 };
 
-// --- ArsenalCard with Settings Button ---
+// --- ArsenalCard (Kept Same) ---
 const ArsenalCard: React.FC<{ toolKey: string, onClick: () => void, onSettingsClick: () => void }> = ({ toolKey, onClick, onSettingsClick }) => {
   const { getToolInfo } = useToolRegistry();
   const tool = getToolInfo(toolKey);
@@ -156,9 +202,11 @@ const ArsenalCard: React.FC<{ toolKey: string, onClick: () => void, onSettingsCl
     data_journalism: <Share2 size={24} />,
     root_command: <TowerControl size={24} />,
     governance: <BookText size={24} />,
+    public_chat: <MessageSquare size={24} />,
+    predictive_hub: <Globe size={24} />,
   };
   
-  if (!tool) return null; // Or a loading skeleton
+  if (!tool) return null;
 
   return (
       <div className="bg-panel p-6 rounded-2xl border border-border-subtle flex flex-col justify-between h-56 group relative hover:translate-y-[-4px] shadow-sm hover:shadow-elevation">
@@ -175,7 +223,6 @@ const ArsenalCard: React.FC<{ toolKey: string, onClick: () => void, onSettingsCl
       </div>
   );
 };
-
 
 const Toast: React.FC<{ message: string; type: 'info' | 'success' | 'error'; onDismiss: () => void; }> = ({ message, type, onDismiss }) => {
   const baseClasses = "fixed top-24 right-6 z-[200] flex items-center gap-4 p-4 rounded-xl shadow-2xl border animate-in slide-in-from-top-12 duration-500";

@@ -1,0 +1,136 @@
+
+version: '3.8'
+
+# RaidanPro Master Sovereign Deployment v2.0
+# Target: Ubuntu 24.04 LTS
+# Compliance Level: Strict (Yemeni Law 1990/1994)
+
+networks:
+  sovereign-net:
+    driver: bridge
+    name: sovereign-net
+    driver_opts:
+      com.docker.network.bridge.name: br-sovereign
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_models:
+  minio_data:
+  sovereign_logs:
+
+services:
+  # --- 1. Infrastructure Layer ---
+  
+  # The Vault (Main Database)
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: raidan-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-raidan_root}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_root_pass}
+      POSTGRES_DB: raidan_core
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../yemen_core_backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sovereign-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-raidan_root} -d raidan_core"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # High-Speed Cache
+  redis:
+    image: redis/redis-stack:latest
+    container_name: raidan-cache
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - sovereign-net
+
+  # --- 2. Intelligence Layer ---
+
+  # Local AI Inference Engine
+  ollama:
+    image: ollama/ollama:latest
+    container_name: raidan-ollama
+    restart: always
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - sovereign-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Yemen Core API (Knowledge Graph & Ingestion)
+  yemen-core:
+    build:
+      context: ../yemen_core_backend
+      dockerfile: Dockerfile
+    container_name: raidan-yemen-core
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-raidan_root}:${DB_PASSWORD:-secure_root_pass}@postgres:5432/raidan_core
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sovereign-net
+
+  # --- 3. Application Layer ---
+
+  # Main Backend API (Orchestrator)
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: raidan-backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-raidan_root}:${DB_PASSWORD:-secure_root_pass}@postgres:5432/raidan_core
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CF_API_TOKEN=${CF_API_TOKEN}
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - sovereign_logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - sovereign-net
+
+  # Frontend (Next.js/React UI)
+  frontend:
+    build:
+      context: ..
+      dockerfile: Dockerfile.frontend
+    container_name: raidan-ui
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - sovereign-net
+
+  # --- 4. Security & Isolation ---
+  
+  # Evolution API (WhatsApp Sovereign Bridge)
+  evolution-api:
+    image: atendai/evolution-api:latest
+    container_name: raidan-whatsapp
+    restart: always
+    environment:
+      - AUTHENTICATION_API_KEY=${WHATSAPP_API_KEY}
+    networks:
+      - sovereign-net
