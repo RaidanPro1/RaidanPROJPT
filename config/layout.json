@@ -1,0 +1,44 @@
+
+{
+  "header": {
+    "brand": {
+      "logoUrl": null,
+      "name": "RaidanPro"
+    },
+    "menuItems": [
+      {
+        "title": "الاستخبارات",
+        "tools": ["forensics_lab", "predictive_center", "geo_int_station", "data_journalism"]
+      },
+      {
+        "title": "البيانات والنشر",
+        "tools": ["smart_newsroom", "dialect_engine", "data_feeds"]
+      },
+      {
+        "title": "النواة والتحكم",
+        "tools": ["root_command", "governance", "core_settings", "tenants"]
+      }
+    ],
+    "userProfile": {
+      "name": "Root Admin",
+      "avatarUrl": null,
+      "menu": [
+        { "label": "الملف الشخصي", "path": "/profile" },
+        { "label": "الإعدادات", "path": "/settings" },
+        { "label": "تسجيل الخروج", "path": "/logout" }
+      ]
+    }
+  },
+  "footer": {
+    "copyright": "© 2026 RaidanPro Sovereign Systems. All Rights Reserved.",
+    "legalLinks": [
+      { "label": "سياسة الخصوصية", "path": "/privacy" },
+      { "label": "شروط الخدمة", "path": "/terms" }
+    ],
+    "quote": "السيادة ليست خياراً، بل هي ضرورة.",
+    "telemetry": {
+      "apiEndpoint": "http://127.0.0.1:8000/api/v1/status",
+      "activeModel": "Qwen-2.5-32b"
+    }
+  }
+}

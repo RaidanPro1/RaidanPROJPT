@@ -1,0 +1,32 @@
+
+{
+  "options": {
+    "paths": {
+      "root": "/data",
+      "fonts": "fonts",
+      "styles": "styles",
+      "mbtiles": ""
+    },
+    "domains": [
+      "localhost:8080",
+      "maps.raidan.pro"
+    ],
+    "formatQuality": {
+      "webp": 90
+    }
+  },
+  "styles": {
+    "osm-bright": {
+      "style": "styles/osm-bright/style.json",
+      "tilejson": {
+        "type": "overlay",
+        "format": "png"
+      }
+    }
+  },
+  "data": {
+    "yemen-v3": {
+      "mbtiles": "yemen.mbtiles"
+    }
+  }
+}

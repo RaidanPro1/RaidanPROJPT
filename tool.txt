@@ -1,72 +1,34 @@
-دليل ترسانة YemenJPT الرقمية السيادية - الإصدار الشامل 1.5.0
+دليل ترسانة YemenJPT الرقمية السيادية الهجينة - الإصدار 1.7.5
 ============================================================
 
-1. طبقة البنية التحتية والشبكة (Infrastructure & Mesh)
+1. البنية التحتية والاتصال (Infrastructure & Mail)
 --------------------------------------------------
-• Coolify: إدارة الحاويات والانتشار الآلي. (https://coolify.io)
-• Docker & Compose: المحرك الأساسي للتشغيل. (https://www.docker.com)
-• Portainer CE: واجهة إدارة الحاويات الرسومية. (https://www.portainer.io)
-• Nginx Proxy Manager: بوابة التوجيه وتشفير SSL. (https://nginxproxymanager.com)
-• Traefik Proxy: موازن أحمال سحابي. (https://traefik.io)
-• WireGuard / Headscale: الشبكة المشفرة (VPN). (https://www.wireguard.com)
-• Supabase: قاعدة بيانات وبنية خلفية متكاملة. (https://supabase.com)
-• Technitium DNS: إدارة النطاقات المحلية. (https://technitium.com)
+• Coolify: المايسترو لإدارة السيرفر ونشر التطبيقات.
+• Nginx Proxy Manager: الحارس وبوابة التوجيه وإدارة SSL.
+• Mailu: سيرفر البريد السيادي لإدارة المراسلات المشفرة.
+• MinIO: الخزنة المركزية لتخزين البيانات (S3 Standard).
 
-2. العقل الرقمي والمعالجة (AI, Models & Processing)
+2. الذكاء الاصطناعي والبحث (AI & Content Intelligence)
 --------------------------------------------------
-• Google Gemini API: التحليل العميق والمنطق السحابي. (https://ai.google.dev)
-• Ollama: محرك الاستدلال المحلي للنماذج. (https://ollama.com)
-• Llama 3 (Meta): النموذج اللغوي السيادي الأساسي. (https://llama.meta.com)
-• Whisper (OpenAI): نظام تفريغ الصوت وتحويله لنص. (https://github.com/openai/whisper)
-• Faster Whisper XXL: نسخة محسنة وسريعة للتفريغ. (https://github.com/cbro33/Faster-Whisper-XXL-GUI)
-• AP Local AI: نظام إدارة الذكاء الاصطناعي للصحفيين. (https://github.com/associatedpress/local-ai)
-• Qwen2.5-Sex: تصنيف وتحليل المحتوى الجندري. (https://github.com/ystemsrx/Qwen2.5-Sex)
-• SexBiasAnalysis: تحليل الانحياز في الذكاء الاصطناعي. (https://github.com/aspratle/GenerativeAI_SexBiasAnalysis)
-• CopilotKit: دمج المساعدين الذكيين في التطبيقات. (https://github.com/CopilotKit/CopilotKit)
+• Ollama (Native): المفكر المحلي (تثبيت أصلي للأداء العالي).
+• RAGFlow: المدقق العميق للمستندات والجداول (OCR/AI).
+• Neo4j: كاشف الشبكات والرسوم البيانية للعلاقات.
+• Faster-Whisper XXL (CPU): محرك التفريغ الصوتي فائق الدقة.
+• VR Arch Isolation: وحدة تنقية وعزل الصوت البشري عن الضجيج.
 
-3. واجهات المحادثة والتفاعل (Chat UIs & Interaction)
+3. الاستخبارات والتحقق (OSINT & Deepfake Check)
 --------------------------------------------------
-• Open WebUI: الواجهة التفاعلية الأساسية للدردشة. (https://openwebui.com)
-• Lobe Chat: واجهة محادثة عصرية تدعم الإضافات. (https://github.com/lobehub/lobe-chat)
-• NextChat: واجهة خفيفة وسريعة للنماذج. (https://github.com/ChatGPTNextWeb/NextChat)
-• Press-to-Talk (P2T): التفاعل الصوتي الفوري. (https://github.com/aiaicaramba/press-to-talk)
+• DeepSafe + yt-dlp: خط التحقق من التزييف العميق للفيديو.
+• Maigret: تعقب أسماء المستخدمين عبر المنصات الرقمية.
+• SearXNG: الباحث الخفي ومحرك البحث مجهول الهوية.
+• TorchGeo Worker: عين الصقر لتحليل صور الأقمار الصناعية.
 
-4. الاستخبارات والتحقق (OSINT & Forensics)
+4. الأتمتة والنشر (Publishing & Newsroom)
 --------------------------------------------------
-• SearXNG: محرك بحث خصوصي مجمع. (https://searxng.org)
-• SpiderFoot: استطلاع آلي شامل للبيانات. (https://www.spiderfoot.net)
-• Sherlock / Maigret: تتبع الهويات الرقمية عبر الشبكات. (https://github.com/sherlock-project)
-• Kepler.gl: تحليل البيانات الجغرافية المتقدم. (https://kepler.gl)
-• Sentinel-2: بيانات وصور الأقمار الصناعية. (https://sentinel.esa.int)
-• ArchiveBox: نظام أرشفة الويب الدائم. (https://archivebox.io)
-• Huginn: نظام وكلاء لمراقبة الويب. (https://github.com/huginn/huginn)
-• Sherloq: مختبر التحليل الجنائي للصور. (https://github.com/revalo/sherloq)
-• AV Processing Lab: معالجة الوسائط بالذكاء الاصطناعي. (https://github.com/dharmendra-coder1)
-
-5. إدارة المحتوى، النشر والإنتاجية (CMS & Productivity)
---------------------------------------------------
-• Ghost CMS: التدوين الاستقصائي والنشر. (https://ghost.org)
-• Nextcloud Hub: السحابة السيادية والتعاون. (https://nextcloud.com)
-• Payload CMS: نظام إدارة محتوى مرن (Headless). (https://payloadcms.com)
-• Mattermost: التواصل المشفر للفريق. (https://mattermost.com)
-• SiYuan: تدوين الملاحظات المعرفية. (https://github.com/siyuan-note/siyuan)
-• ToolJet: بناء تطبيقات داخلية (Low-code). (https://github.com/ToolJet/ToolJet)
-• Reactive Resume: إدارة السير الذاتية الرقمية. (https://github.com/amruthpillai/reactive-resume)
-
-6. الوسائط المتعددة والبث (Media & Broadcasting)
---------------------------------------------------
-• AzuraCast: إدارة الإذاعات الرقمية. (https://www.azuracast.com)
-• Owncast: خادم بث الفيديو المباشر المستقل. (https://owncast.online)
-• PhotoPrism: خزنة الصور الذكية. (https://photoprism.app)
-• Postiz: جدولة النشر عبر التواصل الاجتماعي. (https://postiz.com)
-• FFmpeg: المحرك القياسي لمعالجة الوسائط. (https://ffmpeg.org)
-
-7. الأمن والخصوصية (Security Suite)
---------------------------------------------------
-• Vaultwarden: إدارة كلمات المرور المشفرة. (https://github.com/dani-garcia/vaultwarden)
-• Kasm Workspaces: المتصفح المعزول (Browser Isolation). (https://kasmweb.com)
-• SecureDrop: بوابة استقبال التسريبات الآمنة. (https://securedrop.org)
+• n8n: الرابط ومنصة الأتمتة المركزية لسير العمل.
+• Strapi: الواجهة ونظام إدارة المحتوى (Headless CMS).
+• Ghost CMS: منصة التدوين الصحفي والنشر الاستقصائي.
+• OpenRefine: أداة تنظيف البيانات وتحويلها.
 
 ------------------------------------------------------------
-تم إعداد هذا التحديث لضمان شمولية كافة الأدوات السيادية في نظام YemenJPT.
-YemenJPT - السيادة الرقمية والتحقيق الحر.
+YemenJPT - السيادة الرقمية والذكاء الهجين والاتصال المؤمن.

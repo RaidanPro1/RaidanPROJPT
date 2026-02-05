@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+asyncpg
+sentence-transformers
+unstructured[pdf]
+pydantic
+python-dotenv
+cryptography
+requests
+pandas-datareader

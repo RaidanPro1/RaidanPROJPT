@@ -1,0 +1,137 @@
+
+version: '3.8'
+
+# RaidanPro Sovereign Platform v2.0 - Master Orchestrator
+# CTO: Lead Systems Architect
+
+networks:
+  sovereign-net:
+    driver: bridge
+    name: sovereign-net
+
+volumes:
+  yemen-core-db-data:
+    driver: local
+  redis-data:
+    driver: local
+  maps-data:
+    driver: local
+
+services:
+  # --- 1. Frontend: The Sovereign Root UI ---
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: sovereign-ui
+    ports:
+      - "80:80"
+    networks:
+      - sovereign-net
+    restart: unless-stopped
+    depends_on:
+      - main-backend
+      - yemen-core-api
+
+  # --- 2. Backend: Main Application & Provisioning API ---
+  main-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sovereign-main-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db_placeholder/main_db # Placeholder for main DB
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      # --- NEW: Social Login Provider Credentials for Authentik/Zitadel ---
+      - AUTHENTIK_URL=${AUTHENTIK_URL}
+      - AUTHENTIK_TOKEN=${AUTHENTIK_TOKEN}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+    volumes:
+      - ./backend:/app
+    networks:
+      - sovereign-net
+    restart: unless-stopped
+
+  # --- 3. Backend: Terminal Session with Gemini CLI ---
+  terminal-session:
+    build:
+      context: ./backend/terminal
+      dockerfile: Dockerfile
+    container_name: sovereign-terminal
+    # This service is accessed via the main-backend's WebSocket proxy
+    privileged: true # Required for Docker-in-Docker functionality of the CLI
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - sovereign-net
+    restart: unless-stopped
+
+  # --- 4. Yemen Core: Sovereign Data Warehouse API ---
+  yemen-core-api:
+    build:
+      context: ./yemen_core_backend
+      dockerfile: Dockerfile
+    container_name: yemen-core-api
+    ports:
+      - "8001:8000"
+    depends_on:
+      yemen-core-db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://yemen_core_user:sovereign_password@yemen-core-db:5432/yemen_core_db
+    networks:
+      - sovereign-net
+    restart: unless-stopped
+
+  # --- 5. Yemen Core: Knowledge Base (Postgres + pgvector) ---
+  yemen-core-db:
+    image: pgvector/pgvector:pg16
+    container_name: yemen-core-db
+    environment:
+      POSTGRES_DB: yemen_core_db
+      POSTGRES_USER: yemen_core_user
+      POSTGRES_PASSWORD: sovereign_password
+    volumes:
+      - yemen-core-db-data:/var/lib/postgresql/data
+      - ./yemen_core_backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sovereign-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yemen_core_user -d yemen_core_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- 6. Caching & In-Memory Store ---
+  redis:
+    image: redis/redis-stack:latest
+    container_name: sovereign-cache
+    ports:
+      - "6379:6379" # For local debugging
+      - "8001:8001" # For RedisInsight UI
+    volumes:
+      - redis-data:/data
+    networks:
+      - sovereign-net
+    restart: unless-stopped
+
+  # --- 7. Sovereign Map Engine ---
+  tileserver:
+    image: maptiler/tileserver-gl:latest
+    container_name: sovereign-maps
+    ports:
+      - "8080:80"
+    volumes:
+      - ./maps:/data
+    command: ["-c", "/data/config.json"]
+    restart: always
+    networks:
+      - sovereign-net

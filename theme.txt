@@ -1,0 +1,1 @@
+/* This file is deprecated. All theme and style configurations have been centralized in index.html for this buildless environment. */

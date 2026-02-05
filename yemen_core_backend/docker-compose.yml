@@ -1,0 +1,54 @@
+version: '3.8'
+
+# Yemen Core: The Sovereign Data Warehouse
+# Maintained by Big Data Engineering Division - RaidanPro
+
+networks:
+  yemen_core_net:
+    driver: bridge
+
+services:
+  # 1. The Knowledge Base: PostgreSQL + pgvector
+  postgres-core:
+    image: pgvector/pgvector:pg16
+    container_name: yemen-core-db
+    environment:
+      POSTGRES_DB: yemen_core_db
+      POSTGRES_USER: yemen_core_user
+      POSTGRES_PASSWORD: sovereign_password # Change in production
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432" # Expose on a non-default port to avoid conflicts
+    networks:
+      - yemen_core_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yemen_core_user -d yemen_core_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. The Ingestion & Knowledge API Engine
+  yemen-core-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yemen-core-api
+    depends_on:
+      postgres-core:
+        condition: service_healthy
+    ports:
+      - "8001:8000" # API Gateway on port 8001
+    environment:
+      - DATABASE_URL=postgresql://yemen_core_user:sovereign_password@postgres-core:5432/yemen_core_db
+      # Add other keys as needed
+      # - SENTENCE_TRANSFORMER_MODEL=BAAI/bge-m3
+    networks:
+      - yemen_core_net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local

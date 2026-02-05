@@ -1,16 +1,16 @@
 
 import React, { useState } from 'react';
-import { Play, ArrowRight, Database, Globe, Shield, Zap, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Play, ArrowRight, Database, Globe, Shield, Zap, CheckCircle2, AlertCircle, Fingerprint, Activity, Map, Share2, Search } from 'lucide-react';
 
 const WorkflowManager: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
-    { name: 'Huginn Scan', desc: 'جلب البيانات من المواقع الحكومية اليمنية', status: 'idle' },
-    { name: 'Translation', desc: 'ترجمة المحتوى عبر LibreTranslate محلياً', status: 'idle' },
-    { name: 'Forensics', desc: 'فحص ميتاداتا الملفات عبر ExifTool', status: 'idle' },
-    { name: 'Vault Ingest', desc: 'أرشفة البيانات في Aleph Central', status: 'idle' }
+    { name: 'TorchGeo Analysis', desc: 'تحليل صور الأقمار الصناعية لكشف الدمار أو التغيرات', icon: <Search size={24} /> },
+    { name: 'DeepSafe Verify', desc: 'التحقق الآلي من الفيديوهات المرتبطة وكشف التزييف', icon: <Shield size={24} /> },
+    { name: 'RAGFlow Ingest', desc: 'فهرسة التقارير واستخراج الكيانات والجداول بدقة AI', icon: <Database size={24} /> },
+    { name: 'Neo4j Graphing', desc: 'رسم علاقات الفساد والارتباطات بين الكيانات المكتشفة', icon: <Share2 size={24} /> }
   ];
 
   const triggerPipeline = () => {
@@ -38,19 +38,19 @@ const WorkflowManager: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-yemenBlue flex items-center gap-2">
             <Zap className="text-yemenGold" />
-            YemenJPT Intelligence Pipeline
+            خط الاستخبارات الهجين (Hybrid Intel Pipeline)
           </h2>
-          <p className="text-gray-500 text-sm">أتمتة تدفق البيانات السيادية بين الأدوات المختلفة.</p>
+          <p className="text-gray-500 text-sm">أتمتة الربط بين الرصد الفضائي، التحقق الجنائي، وتحليل العلاقات.</p>
         </div>
         <button 
           onClick={triggerPipeline}
           disabled={isRunning}
           className={`px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all ${
-            isRunning ? 'bg-gray-100 text-gray-400' : 'bg-yemenGold text-yemenBlue-dark hover:scale-105'
+            isRunning ? 'bg-gray-100 text-gray-400' : 'bg-yemenGold text-yemenBlue-dark hover:scale-105 shadow-md'
           }`}
         >
           {isRunning ? <Zap size={18} className="animate-spin" /> : <Play size={18} fill="currentColor" />}
-          {isRunning ? 'جاري التنفيذ...' : 'تشغيل Pipeline'}
+          {isRunning ? 'جاري التحليل الهجين...' : 'تشغيل خط الاستخبارات'}
         </button>
       </div>
 
@@ -62,30 +62,33 @@ const WorkflowManager: React.FC = () => {
           {steps.map((s, i) => (
             <div key={i} className="flex flex-col items-center text-center group">
               <div className={`w-14 h-14 rounded-full flex items-center justify-center border-4 transition-all duration-500 ${
-                currentStep > i + 1 ? 'bg-green-500 border-green-200 text-white' :
-                currentStep === i + 1 ? 'bg-yemenBlue border-blue-200 text-white scale-110 shadow-lg' :
+                currentStep > i + 1 ? 'bg-green-500 border-green-200 text-white shadow-lg' :
+                currentStep === i + 1 ? 'bg-yemenBlue border-blue-200 text-white scale-110 shadow-xl' :
                 'bg-white border-gray-100 text-gray-400'
               }`}>
-                {currentStep > i + 1 ? <CheckCircle2 size={24} /> : <span>{i + 1}</span>}
+                {currentStep > i + 1 ? <CheckCircle2 size={24} /> : s.icon}
               </div>
               <h4 className={`mt-4 font-bold text-sm ${currentStep === i + 1 ? 'text-yemenBlue' : 'text-gray-900'}`}>{s.name}</h4>
-              <p className="text-[10px] text-gray-500 mt-1 px-2">{s.desc}</p>
+              <p className="text-[10px] text-gray-500 mt-1 px-2 leading-relaxed">{s.desc}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mt-10 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+      <div className="mt-10 p-4 bg-yemenBlue-dark rounded-xl border border-yemenGold/30">
         <div className="flex items-start gap-3">
-          <Shield size={20} className="text-yemenBlue mt-1" />
-          <div>
-            <h5 className="text-xs font-bold text-gray-700 mb-1">منطق الأتمتة (Sovereign Logic):</h5>
-            <code className="text-[10px] font-mono text-blue-800 bg-blue-50 p-2 block rounded">
-              {`IF event(Huginn.new_entry) {
-  DATA = LibreTranslate.process(entry.content, 'ar', 'en');
-  METADATA = ExifTool.sanitize(entry.attachments);
-  Aleph.ingest({ content: DATA, files: METADATA, collection: 'Yemen_Gov_Watch' });
-  Notify(Dashboard, 'تمت أرشفة وثيقة جديدة بنجاح');
+          <Fingerprint size={20} className="text-yemenGold mt-1" />
+          <div className="w-full">
+            <h5 className="text-xs font-bold text-yemenGold mb-1 uppercase tracking-widest">منطق الأتمتة الهجين (Hybrid Intel Logic):</h5>
+            <code className="text-[10px] font-mono text-blue-100 bg-black/40 p-3 block rounded-lg leading-relaxed text-left" dir="ltr">
+              {`ON Sentinel_Trigger(area="YEMEN_WEST") {
+  Worker_TorchGeo.analyze_pixels(sensor="B8", sensitivity=0.8);
+  IF detection.destruction_prob > 0.75 {
+    deepsafe.verify_recent_media(geotag="YEMEN_WEST");
+    n8n.ingest_to_ragflow(source="Forensic_Batch");
+    neo4j.link_entities(context="Infrastructure_Damage");
+    Strapi.draft_report(title="Alert: Conflict Anomaly Detected");
+  }
 }`}
             </code>
           </div>

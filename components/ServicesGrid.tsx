@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Play, Square, RotateCw, MoreVertical, Terminal, Cpu, Database, Loader2, Info } from 'lucide-react';
+import { Play, Square, RotateCw, MoreVertical, Terminal, Cpu, Database, Loader2, Info, HardDrive, ShieldAlert } from 'lucide-react';
 import { Service } from '../types';
 
 interface ServicesGridProps {
@@ -20,7 +20,7 @@ const ServicesGrid: React.FC<ServicesGridProps> = ({ services, onAction }) => {
       {services.map(service => (
         <div 
           key={service.id} 
-          className={`bg-white rounded-xl border transition-all duration-300 overflow-hidden group relative ${
+          className={`bg-white rounded-xl border transition-all duration-300 overflow-hidden group relative flex flex-col ${
             service.status === 'restarting' ? 'border-yemenGold ring-2 ring-yemenGold/20 scale-[0.98]' : 'border-gray-200 hover:shadow-lg'
           }`}
         >
@@ -32,7 +32,7 @@ const ServicesGrid: React.FC<ServicesGridProps> = ({ services, onAction }) => {
             </div>
           )}
 
-          <div className="p-5">
+          <div className="p-5 flex-1">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
@@ -51,7 +51,6 @@ const ServicesGrid: React.FC<ServicesGridProps> = ({ services, onAction }) => {
                     }`}>
                         {service.status === 'running' ? 'نشط' : service.status === 'restarting' ? 'جاري المعالجة' : 'متوقف'}
                     </span>
-                    <span className="text-[9px] text-gray-400 font-mono hidden group-hover:block">{service.id.toUpperCase()}</span>
                   </div>
                 </div>
               </div>
@@ -60,9 +59,33 @@ const ServicesGrid: React.FC<ServicesGridProps> = ({ services, onAction }) => {
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 mb-6 line-clamp-2 h-8 leading-relaxed">
+            <p className="text-xs text-gray-500 mb-4 leading-relaxed line-clamp-3 hover:line-clamp-none transition-all duration-300 cursor-default">
               {service.description}
             </p>
+
+            {/* System Requirements Badge */}
+            {service.requirements && (
+              <div className="bg-blue-50/50 p-2 rounded-lg border border-blue-100 mb-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <ShieldAlert size={10} className="text-yemenBlue" />
+                  <span className="text-[9px] font-black text-yemenBlue uppercase tracking-widest">متطلبات النظام</span>
+                </div>
+                <div className="flex justify-between gap-1">
+                   <div className="flex flex-col items-center flex-1 bg-white p-1 rounded border border-blue-50">
+                      <Cpu size={10} className="text-gray-400 mb-1" />
+                      <span className="text-[8px] font-bold text-gray-600">{service.requirements.minCpu}</span>
+                   </div>
+                   <div className="flex flex-col items-center flex-1 bg-white p-1 rounded border border-blue-50">
+                      <Database size={10} className="text-gray-400 mb-1" />
+                      <span className="text-[8px] font-bold text-gray-600">{service.requirements.minRam}</span>
+                   </div>
+                   <div className="flex flex-col items-center flex-1 bg-white p-1 rounded border border-blue-50">
+                      <HardDrive size={10} className="text-gray-400 mb-1" />
+                      <span className="text-[8px] font-bold text-gray-600">{service.requirements.storage}</span>
+                   </div>
+                </div>
+              </div>
+            )}
 
             {/* Live Metrics */}
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -105,7 +128,7 @@ const ServicesGrid: React.FC<ServicesGridProps> = ({ services, onAction }) => {
               {service.status === 'stopped' ? (
                 <button 
                   onClick={() => onAction(service.id, 'start')}
-                  className="flex-1 flex items-center justify-center gap-2 bg-yemenBlue text-white py-2 rounded-lg hover:bg-yemenBlue-dark transition-all text-xs font-bold active:scale-95"
+                  className="flex-1 flex items-center justify-center gap-2 bg-yemenBlue text-white py-2 rounded-lg hover:bg-yemenBlue-dark transition-all text-xs font-bold active:scale-95 shadow-sm"
                 >
                   <Play size={14} fill="currentColor" />
                   تشغيل الخدمة
@@ -140,6 +163,7 @@ const ServicesGrid: React.FC<ServicesGridProps> = ({ services, onAction }) => {
                 </div>
                 <div className="text-green-400 opacity-80 space-y-0.5 custom-scrollbar overflow-y-auto h-20">
                     <p>[INFO] Initializing ${service.name} environment...</p>
+                    <p>[INFO] Minimum requirements check: {service.requirements?.minRam} RAM ... OK</p>
                     <p>[INFO] Mounting volume /data/${service.id}</p>
                     <p>[INFO] Port forwarding ${Math.floor(Math.random() * 9000 + 1000)} -> 80</p>
                     <p className="text-blue-400"># Container ID: ${service.image.split('/')[0]}_${Math.random().toString(36).substr(2, 5)}</p>

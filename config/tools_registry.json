@@ -1,0 +1,40 @@
+
+[
+  {
+    "module_key": "smart_newsroom",
+    "display_name": "غرفة الأخبار الذكية",
+    "description": "إدارة النشر والتقارير الاستقصائية.",
+    "icon_name": "Newspaper",
+    "is_active": true,
+    "route_path": "/smart-newsroom",
+    "settings": {
+      "user": {
+        "creativity": { "type": "slider", "label": "مستوى الإبداع", "value": 0.5, "min": 0, "max": 1, "step": 0.1 },
+        "responseLength": { "type": "slider", "label": "طول الرد", "value": 256, "min": 100, "max": 1024, "step": 64 }
+      },
+      "root": {
+        "ramLimit": { "type": "slider", "label": "حد الذاكرة (MB)", "value": 1024, "min": 256, "max": 4096, "step": 256 },
+        "accessControl": { "type": "checkboxes", "label": "الوصول", "options": ["Everyone", "Admins Only", "Editors"], "value": ["Everyone"] },
+        "maintenanceMode": { "type": "toggle", "label": "وضع الصيانة", "value": false }
+      }
+    }
+  },
+  {
+    "module_key": "forensics_lab",
+    "display_name": "مختبر الجنايات الرقمية",
+    "description": "كشف التزييف العميق وتحليل الصور.",
+    "icon_name": "Fingerprint",
+    "is_active": true,
+    "route_path": "/forensics-lab",
+    "settings": {
+      "user": {
+        "analysisDepth": { "type": "slider", "label": "عمق التحليل", "value": 0.8, "min": 0.1, "max": 1, "step": 0.1 }
+      },
+      "root": {
+        "ramLimit": { "type": "slider", "label": "حد الذاكرة (MB)", "value": 2048, "min": 1024, "max": 8192, "step": 512 },
+        "accessControl": { "type": "checkboxes", "label": "الوصول", "options": ["Everyone", "Admins Only", "Forensics Team"], "value": ["Forensics Team"] },
+        "maintenanceMode": { "type": "toggle", "label": "وضع الصيانة", "value": false }
+      }
+    }
+  }
+]

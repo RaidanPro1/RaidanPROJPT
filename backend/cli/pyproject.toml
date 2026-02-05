@@ -1,0 +1,21 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raidan_ai"
+version = "1.0.0"
+authors = [
+  { name="RaidanPro Systems Architect", email="architect@raidan.pro" },
+]
+description = "A Gemini-powered CLI assistant for the YemenJPT Sovereign Terminal."
+requires-python = ">=3.8"
+dependencies = [
+    "google-generativeai",
+    "python-dotenv",
+]
+
+[project.scripts]
+raidan-ai = "raidan_ai.cli:main"
+ai = "raidan_ai.cli:main"

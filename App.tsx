@@ -1,156 +1,195 @@
 
-import React, { useState, useEffect } from 'react';
-import { Layout, Dashboard, Settings, Brain, Shield, Database, Microscope, Radio, HardDrive, Terminal, Zap, Map, Globe, Activity } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  ShieldCheck, Activity, Zap, Brain, Fingerprint, 
+  Map as MapIcon, Radar, Share2, Newspaper, 
+  TowerControl, Mic2, LayoutDashboard, ChevronRight,
+  Database, Globe, Lock, Cpu, Settings, BookText,
+  AlertTriangle, CheckCircle2, Info, X, Wrench, DatabaseZap,
+  Settings2
+} from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import ServicesGrid from './components/ServicesGrid';
+import Footer from './components/Footer';
+import ToolSettingsModal from './components/ToolSettingsModal';
 import SystemOverview from './components/SystemOverview';
-import AIAssistant from './components/AIAssistant';
-import ConfigGenerator from './components/ConfigGenerator';
 import WorkflowManager from './components/WorkflowManager';
-import InfrastructureStrategy from './components/InfrastructureStrategy';
-import DNSManager from './components/DNSManager';
-import SystemDiagnostic from './components/SystemDiagnostic';
-import { Service, ModuleType } from './types';
+import TenantManager from './components/TenantManager';
+import ForensicsLab from './components/ForensicsLab';
+import PredictiveCenter from './components/PredictiveCenter';
+import DialectEngine from './components/DialectEngine';
+import GeoIntStation from './components/GeoIntStation';
+import DataJournalism from './components/DataJournalism';
+import SmartNewsroom from './components/SmartNewsroom';
+import RootCommandCenter from './components/RootCommandCenter';
+import SettingsPage from './components/SettingsPage';
+import BrandingPage from './components/BrandingPage';
+import GovernancePage from './components/GovernancePage';
+import ToolIdentityManager from './components/ToolIdentityManager';
+import TerminalConsole from './components/TerminalConsole';
+import DataFeedsManager from './components/DataFeedsManager';
+import ProfilePage from './components/ProfilePage';
+import { Service, ActiveModule } from './types';
 import { INITIAL_SERVICES } from './constants';
+import { useBranding } from './context/BrandingContext';
+import { useToolRegistry } from './context/ToolRegistryContext';
+import { useSettings } from './context/SettingsContext';
+import AIAssistant from './components/AIAssistant';
 
 const App: React.FC = () => {
-  const [activeModule, setActiveModule] = useState<ModuleType | 'dashboard' | 'terminal' | 'config' | 'pipeline' | 'strategy' | 'dns' | 'diagnostic'>('dashboard');
-  const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [activeModule, setActiveModule] = useState<ActiveModule>('dashboard');
+  const [services] = useState<Service[]>(INITIAL_SERVICES);
+  const { getToolInfo } = useToolRegistry();
+  const { userRole } = useSettings();
+  const [toast, setToast] = useState<{ message: string; type: 'info' | 'success' | 'error'; visible: boolean }>({ message: '', type: 'info', visible: false });
 
-  // Simulate dynamic service status updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setServices(prev => prev.map(s => {
-        if (s.status === 'running') {
-          return {
-            ...s,
-            cpu: Math.max(0.5, Math.min(95, s.cpu + (Math.random() * 4 - 2))),
-            ram: Math.max(128, Math.min(8192, s.ram + (Math.random() * 100 - 50)))
-          };
-        }
-        return s;
-      }));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [selectedTool, setSelectedTool] = useState<any>(null);
 
-  const handleServiceAction = async (id: string, action: 'start' | 'stop' | 'restart') => {
-    const serviceName = services.find(s => s.id === id)?.name;
-    console.log(`[SYSTEM] Initiating ${action} for ${serviceName} via /api/v1/system/services/${id}/${action}`);
-
-    // Optimistic UI Update: Change status locally before API confirms
-    setServices(prev => prev.map(s => {
-      if (s.id === id) {
-        if (action === 'start') return { ...s, status: 'restarting' }; // Transition state
-        if (action === 'stop') return { ...s, status: 'restarting' }; 
-        if (action === 'restart') return { ...s, status: 'restarting' };
-      }
-      return s;
-    }));
-
-    // Simulate API Latency (1.5 seconds)
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Confirm Change
-    setServices(prev => prev.map(s => {
-      if (s.id === id) {
-        if (action === 'start' || action === 'restart') {
-          return { ...s, status: 'running', cpu: 2, ram: 512 };
-        }
-        if (action === 'stop') {
-          return { ...s, status: 'stopped', cpu: 0, ram: 0 };
-        }
-      }
-      return s;
-    }));
+  const showToast = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
+    setToast({ message, type, visible: true });
+    setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 5000);
   };
+
+  const openToolSettings = (toolKey: string) => {
+    const tool = getToolInfo(toolKey);
+    if (tool && (tool as any).settings) { // Assuming settings exist
+      setSelectedTool(tool);
+      setIsSettingsModalOpen(true);
+    } else {
+        // Mock settings for tools not in the new registry for demo purposes
+        const mockTool = {
+            display_name: tool?.display_name || "Default Tool",
+            settings: {
+                user: { creativity: { type: "slider", label: "مستوى الإبداع", value: 0.7, min: 0, max: 1, step: 0.1 }},
+                root: { ramLimit: { type: "slider", label: "حد الذاكرة (MB)", value: 512, min: 128, max: 2048, step: 128 }, maintenanceMode: { type: "toggle", label: "وضع الصيانة", value: false }}
+            }
+        };
+        setSelectedTool(mockTool);
+        setIsSettingsModalOpen(true);
+    }
+  };
+
 
   const renderContent = () => {
     switch (activeModule) {
       case 'dashboard':
         return (
-          <div className="space-y-6">
+          <div className="space-y-8 animate-in fade-in duration-700">
             <SystemOverview services={services} />
-            <WorkflowManager />
-            <ServicesGrid services={services} onAction={handleServiceAction} />
-          </div>
-        );
-      case 'strategy':
-        return <InfrastructureStrategy />;
-      case 'pipeline':
-        return <WorkflowManager />;
-      case 'config':
-        return <ConfigGenerator />;
-      case 'dns':
-        return <DNSManager />;
-      case 'diagnostic':
-        return <SystemDiagnostic services={services} />;
-      case 'terminal':
-        return (
-          <div className="bg-black text-green-500 p-4 font-mono h-[calc(100vh-160px)] rounded-lg shadow-inner overflow-y-auto custom-scrollbar">
-            <div className="mb-2"># YemenJPT Sovereign-Admin v1.2.0-STABLE</div>
-            <div className="mb-2">[OK] Infrastructure: yemenjpt-net attached</div>
-            <div className="mb-2">[OK] Node: hosting.raidan.pro (NVMe Storage)</div>
-            <div className="mb-2">[OK] GPU: NVIDIA RTX Passthrough Active</div>
-            <div className="mb-2">[OK] Proxy: Traefik routing 16 services</div>
-            <div className="mb-2">$ docker-compose ps</div>
-            <div className="grid grid-cols-4 gap-4 border-b border-green-800 pb-1 mb-2 opacity-70">
-              <div>SERVICE</div><div>MODULE</div><div>STATUS</div><div>RESOURCE</div>
-            </div>
-            {services.map(s => (
-              <div key={s.id} className="grid grid-cols-4 gap-4 py-1 text-sm">
-                <div>{s.name}</div>
-                <div className="truncate opacity-60 text-xs">{s.module}</div>
-                <div className={s.status === 'running' ? 'text-green-400' : s.status === 'restarting' ? 'text-yellow-400' : 'text-red-400'}>
-                    {s.status.toUpperCase()}
-                </div>
-                <div className="opacity-50 text-[10px]">{s.cpu.toFixed(1)}% | {(s.ram / 1024).toFixed(1)}GB</div>
-              </div>
-            ))}
-            <div className="mt-4 animate-pulse">_</div>
-          </div>
-        );
-      default:
-        const filteredServices = services.filter(s => s.module === activeModule);
-        return (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
-              <div className="bg-yemenBlue text-white p-3 rounded-lg">
-                <Layout size={24} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-yemenBlue">إدارة وحدة: {activeModule}</h2>
-                <p className="text-gray-500">تحكم كامل في ميكروسيرفس السيادة الرقمية اليمنية.</p>
+            <div className="space-y-6">
+              <h3 className="text-sm font-black text-text-primary uppercase tracking-[0.2em]">ترسانة العمليات السيادية</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                 <ArsenalCard toolKey="smart_newsroom" onClick={() => setActiveModule('smart_newsroom')} onSettingsClick={() => openToolSettings('smart_newsroom')} />
+                 <ArsenalCard toolKey="forensics_lab" onClick={() => setActiveModule('forensics_lab')} onSettingsClick={() => openToolSettings('forensics_lab')} />
+                 <ArsenalCard toolKey="geo_int_station" onClick={() => setActiveModule('geo_int_station')} onSettingsClick={() => openToolSettings('geo_int_station')} />
+                 <ArsenalCard toolKey="predictive_center" onClick={() => setActiveModule('predictive_center')} onSettingsClick={() => openToolSettings('predictive_center')} />
+                 <ArsenalCard toolKey="dialect_engine" onClick={() => setActiveModule('dialect_engine')} onSettingsClick={() => openToolSettings('dialect_engine')} />
+                 <ArsenalCard toolKey="data_journalism" onClick={() => setActiveModule('data_journalism')} onSettingsClick={() => openToolSettings('data_journalism')} />
+                 <ArsenalCard toolKey="root_command" onClick={() => setActiveModule('root_command')} onSettingsClick={() => openToolSettings('root_command')} />
+                 <ArsenalCard toolKey="governance" onClick={() => setActiveModule('governance')} onSettingsClick={() => openToolSettings('governance')} />
               </div>
             </div>
-            <ServicesGrid services={filteredServices} onAction={handleServiceAction} />
           </div>
         );
+      
+      case 'smart_newsroom': return <SmartNewsroom />;
+      case 'forensics_lab': return <ForensicsLab />;
+      case 'predictive_center': return <PredictiveCenter />;
+      case 'dialect_engine': return <DialectEngine />;
+      case 'geo_int_station': return <GeoIntStation />;
+      case 'data_journalism': return <DataJournalism />;
+      case 'root_command': return <RootCommandCenter />;
+      case 'governance': return <GovernancePage />;
+      case 'branding': return <BrandingPage />;
+      case 'tenants': return <TenantManager />;
+      case 'core_settings': return <SettingsPage />;
+      case 'tool_identity': return <ToolIdentityManager />;
+      case 'terminal': return <TerminalConsole />;
+      case 'data_feeds': return <DataFeedsManager />;
+      case 'profile': return <ProfilePage />;
+      default: return <div className="p-20 text-center bg-panel border-2 border-dashed border-border-subtle rounded-2xl text-text-subtle font-black uppercase tracking-widest">الوحدة قيد التجهيز...</div>;
     }
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-50 text-gray-900 font-tajawal overflow-hidden">
-      <Sidebar 
-        activeModule={activeModule} 
-        setActiveModule={setActiveModule} 
-        isOpen={isSidebarOpen}
-        toggle={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
-      
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-        
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen flex flex-col bg-canvas text-text-primary font-tajawal overflow-hidden">
+      <Header />
+      <div className="flex flex-1 overflow-hidden">
+        {/* The sidebar is kept as a primary navigation element as per UX best practices for complex dashboards */}
+        <Sidebar activeModule={activeModule} setActiveModule={setActiveModule} isOpen={true} toggle={() => {}} />
+        <main className="flex-1 overflow-y-auto custom-scrollbar relative">
+          <div className="p-8 max-w-[1800px] mx-auto pb-24">
             {renderContent()}
           </div>
-        </div>
+        </main>
+      </div>
+      <Footer />
+      
+      <AIAssistant />
+      
+      {isSettingsModalOpen && selectedTool && (
+        <ToolSettingsModal 
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
+            tool={selectedTool}
+            userRole={userRole}
+        />
+      )}
 
-        <AIAssistant />
-      </main>
+      {toast.visible && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast({ ...toast, visible: false })} />}
+    </div>
+  );
+};
+
+// --- ArsenalCard with Settings Button ---
+const ArsenalCard: React.FC<{ toolKey: string, onClick: () => void, onSettingsClick: () => void }> = ({ toolKey, onClick, onSettingsClick }) => {
+  const { getToolInfo } = useToolRegistry();
+  const tool = getToolInfo(toolKey);
+
+  const defaultIcons: { [key: string]: React.ReactNode } = {
+    smart_newsroom: <Newspaper size={24} />,
+    forensics_lab: <Fingerprint size={24} />,
+    geo_int_station: <MapIcon size={24} />,
+    predictive_center: <Radar size={24} />,
+    dialect_engine: <Mic2 size={24} />,
+    data_journalism: <Share2 size={24} />,
+    root_command: <TowerControl size={24} />,
+    governance: <BookText size={24} />,
+  };
+  
+  if (!tool) return null; // Or a loading skeleton
+
+  return (
+      <div className="bg-panel p-6 rounded-2xl border border-border-subtle flex flex-col justify-between h-56 group relative hover:translate-y-[-4px] shadow-sm hover:shadow-elevation">
+        <div className="flex justify-between items-start mb-4 z-10">
+          <div className="p-4 rounded-xl transition-all shadow-sm group-hover:scale-110 border bg-canvas border-border-subtle text-brand-primary">{defaultIcons[toolKey]}</div>
+          <button onClick={(e) => { e.stopPropagation(); onSettingsClick(); }} className="p-2 bg-canvas rounded-lg border border-border-subtle text-text-subtle hover:text-brand-primary hover:border-brand-primary/50 transition-all opacity-0 group-hover:opacity-100">
+            <Settings2 size={14} />
+          </button>
+        </div>
+        <div onClick={onClick} className="cursor-pointer">
+          <h4 className="text-sm font-black text-text-primary uppercase group-hover:text-brand-primary transition-colors mb-1 font-tajawal">{tool.display_name}</h4>
+          <p className="text-[9px] text-text-subtle font-bold uppercase tracking-widest leading-relaxed line-clamp-2">{tool.description}</p>
+        </div>
+      </div>
+  );
+};
+
+
+const Toast: React.FC<{ message: string; type: 'info' | 'success' | 'error'; onDismiss: () => void; }> = ({ message, type, onDismiss }) => {
+  const baseClasses = "fixed top-24 right-6 z-[200] flex items-center gap-4 p-4 rounded-xl shadow-2xl border animate-in slide-in-from-top-12 duration-500";
+  const typeClasses = {
+    info: "bg-brand-primary text-white border-brand-accent/30",
+    success: "bg-green-600 text-white border-green-400/30",
+    error: "bg-red-600 text-white border-red-400/30",
+  };
+  const Icon = { info: <Info size={20} />, success: <CheckCircle2 size={20} />, error: <AlertTriangle size={20} />,}[type];
+  return (
+    <div className={`${baseClasses} ${typeClasses[type]}`}>
+      {Icon}
+      <p className="text-sm font-bold">{message}</p>
+      <button onClick={onDismiss} className="p-1 rounded-full hover:bg-white/10"><X size={16} /></button>
     </div>
   );
 };

@@ -1,160 +1,165 @@
 
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Brain, 
-  Binoculars, 
-  Microscope, 
-  Radio, 
-  Database, 
-  ShieldCheck, 
-  Server,
-  Terminal,
-  FileCode,
-  Zap,
-  Map,
-  Video,
-  Globe,
-  Activity,
-  ChevronRight,
-  ChevronLeft
-} from 'lucide-react';
-import { ModuleType } from '../types';
-import { MODULES } from '../constants';
+import { ChevronLeft, ChevronRight, Zap, ShieldCheck, Palette, Wrench, Database, User } from 'lucide-react';
+import { useBranding } from '../context/BrandingContext';
+import { useToolRegistry } from '../context/ToolRegistryContext';
+import { useLanguage } from '../context/LanguageContext';
+import { IconRenderer } from './IconRenderer';
 
 interface SidebarProps {
-  activeModule: ModuleType | 'dashboard' | 'terminal' | 'config' | 'pipeline' | 'strategy' | 'dns' | 'diagnostic';
+  activeModule: any;
   setActiveModule: (module: any) => void;
   isOpen: boolean;
   toggle: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule, isOpen, toggle }) => {
-  const getIcon = (id: string) => {
-    switch (id) {
-      case 'brain': return <Brain size={20} />;
-      case 'watchtower': return <Binoculars size={20} />;
-      case 'cleanroom': return <Microscope size={20} />;
-      case 'warroom': return <Radio size={20} />;
-      case 'vault': return <Database size={20} />;
-      case 'shield': return <ShieldCheck size={20} />;
-      case 'hosting': return <Server size={20} />;
-      case 'media': return <Video size={20} />;
-      default: return <LayoutDashboard size={20} />;
-    }
+  const { theme } = useBranding();
+  const { getToolInfo } = useToolRegistry();
+  const { t, language } = useLanguage();
+
+  const menuClass = (id: string) => `w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 mb-1.5 group border border-transparent ${
+    activeModule === id 
+    ? 'bg-brand-primary text-white font-black shadow-elevation' 
+    : 'text-text-secondary hover:bg-canvas hover:text-brand-primary border-transparent hover:border-border-subtle'
+  }`;
+  
+  const getMenuItem = (key: string, defaultIcon: string, defaultName: string) => {
+    const info = getToolInfo(key);
+    // Use dynamic name from registry, fallback to default. The `t` function will return the key if no translation is found.
+    return {
+      key,
+      name: t(info?.display_name || defaultName, info?.display_name || defaultName),
+      icon: info?.icon_name || defaultIcon
+    };
   };
+
+  const centralControl = [
+    getMenuItem('dashboard', 'LayoutDashboard', 'الرئيسية (System Hub)'),
+    getMenuItem('root_command', 'TowerControl', 'برج المراقبة (Root)'),
+    getMenuItem('governance', 'BookText', 'عقيدة النظام'),
+  ];
+  
+  const investigationModules = [
+    getMenuItem('smart_newsroom', 'Newspaper', 'غرفة الأخبار'),
+    getMenuItem('forensics_lab', 'Fingerprint', 'مختبر الجنايات'),
+    getMenuItem('predictive_center', 'Radar', 'مركز الاستبصار'),
+    getMenuItem('geo_int_station', 'Map', 'المحطة الجغرافية'),
+    getMenuItem('dialect_engine', 'Mic2', 'محرك الصوت'),
+    getMenuItem('data_journalism', 'Share2', 'كاشف الفساد'),
+  ];
+
+  const identityProvisioning = [
+      getMenuItem('branding', 'Palette', 'تخصيص الواجهة'),
+      getMenuItem('tenants', 'Users', 'إدارة المستأجرين'),
+      getMenuItem('tool_identity', 'Wrench', 'هوية الأدوات'),
+  ];
+  
+  const dataCoreModules = [
+      getMenuItem('data_feeds', 'DatabaseZap', 'إدارة مصادر البيانات'),
+  ];
+
+  const coreModules = [
+      getMenuItem('core_settings', 'Sliders', 'الإعدادات'),
+      getMenuItem('terminal', 'Terminal', 'Terminal'),
+  ];
+
+  const userProfile = {
+      key: 'profile',
+      name: t('sidebar_profile'),
+      icon: 'User'
+  };
+
 
   return (
     <aside 
-      className={`bg-yemenBlue-dark text-white transition-all duration-300 flex flex-col z-50 ${
-        isOpen ? 'w-72' : 'w-20'
+      className={`bg-panel text-text-primary transition-all duration-500 flex flex-col z-50 border-e border-border-subtle relative ${
+        isOpen ? 'w-80' : 'w-24'
       }`}
     >
-      <div className="h-16 flex items-center px-6 border-b border-yemenBlue/30">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-yemenGold rounded flex items-center justify-center text-yemenBlue-dark font-bold">Y</div>
-          {isOpen && <span className="font-bold text-lg tracking-tight">YemenJPT Admin</span>}
+      <div className={`absolute inset-y-0 w-1 bg-gradient-to-b from-transparent via-brand-primary/10 to-transparent ${language === 'ar' ? 'left-0' : 'right-0'}`}></div>
+
+      <div className="h-20 flex items-center px-6 border-b border-border-subtle bg-panel/80 backdrop-blur-md">
+        <div className="flex items-center gap-4">
+          {theme.logoUrl ? (
+            <img src={theme.logoUrl} className="w-10 h-10 object-contain shadow-sm rounded-lg" />
+          ) : (
+            <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black shadow-sm text-xl">R</div>
+          )}
+          {isOpen && (
+            <div className="flex flex-col animate-in slide-in-from-left-4">
+              <span className="font-black text-lg tracking-tighter leading-none uppercase text-text-primary">RaidanPro</span>
+              <span className="text-[9px] text-brand-primary font-bold uppercase tracking-[0.3em] mt-1 opacity-70">Sovereign Ecosystem</span>
+            </div>
+          )}
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto custom-scrollbar py-4 px-3 space-y-1">
-        <button
-          onClick={() => setActiveModule('dashboard')}
-          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-            activeModule === 'dashboard' ? 'bg-yemenGold text-yemenBlue-dark font-semibold' : 'hover:bg-yemenBlue/50'
-          }`}
-        >
-          <LayoutDashboard size={20} />
-          {isOpen && <span>الرئيسية</span>}
-        </button>
+      <nav className="flex-1 overflow-y-auto custom-scrollbar py-6 px-4">
+        
+        {/* User Profile Link */}
+        <div className="mb-8">
+             <button key={userProfile.key} onClick={() => setActiveModule(userProfile.key)} className={menuClass(userProfile.key)}>
+              <IconRenderer iconName={userProfile.icon} className={activeModule === userProfile.key ? 'text-white' : 'text-brand-primary'} />
+              {isOpen && <span className="text-xs uppercase tracking-wide truncate">{userProfile.name}</span>}
+            </button>
+        </div>
 
-        <button
-          onClick={() => setActiveModule('diagnostic')}
-          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-            activeModule === 'diagnostic' ? 'bg-yemenGold text-yemenBlue-dark font-semibold' : 'hover:bg-yemenBlue/50'
-          }`}
-        >
-          <Activity size={20} />
-          {isOpen && <span>الفحص الشامل (Diagnostic)</span>}
-        </button>
-
-        <button
-          onClick={() => setActiveModule('strategy')}
-          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-            activeModule === 'strategy' ? 'bg-yemenGold text-yemenBlue-dark font-semibold' : 'hover:bg-yemenBlue/50'
-          }`}
-        >
-          <Map size={20} />
-          {isOpen && <span>استراتيجية البنية (Master)</span>}
-        </button>
-
-        <button
-          onClick={() => setActiveModule('pipeline')}
-          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-            activeModule === 'pipeline' ? 'bg-yemenGold text-yemenBlue-dark font-semibold' : 'hover:bg-yemenBlue/50'
-          }`}
-        >
-          <Zap size={20} />
-          {isOpen && <span>سير العمل (Pipeline)</span>}
-        </button>
-
-        <div className="my-4 border-t border-yemenBlue/20 pt-4">
-          {isOpen && <p className="px-3 text-xs font-semibold text-yemenBlue-light uppercase mb-2">الأدوات السيادية</p>}
-          {MODULES.map(module => (
-            <button
-              key={module.id}
-              onClick={() => setActiveModule(module.id)}
-              className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors mb-1 ${
-                activeModule === module.id ? 'bg-yemenBlue text-white border-l-4 border-yemenGold' : 'hover:bg-yemenBlue/50'
-              }`}
-            >
-              {getIcon(module.id)}
-              {isOpen && (
-                <div className="text-right flex-1">
-                  <div className="text-sm font-medium">{module.title.split('(')[0]}</div>
-                  <div className="text-[10px] opacity-60 truncate">{module.description}</div>
-                </div>
-              )}
+        <div className="mb-8">
+          {isOpen && <p className="px-3 text-[10px] font-black text-text-subtle uppercase mb-4 tracking-[0.2em] flex items-center gap-2"><Zap size={10} className="text-brand-accent" /> {t('sidebar_section_central')}</p>}
+          {centralControl.map(item => (
+            <button key={item.key} onClick={() => setActiveModule(item.key)} className={menuClass(item.key)}>
+              <IconRenderer iconName={item.icon} className={activeModule === item.key ? 'text-white' : 'text-brand-primary'} />
+              {isOpen && <span className="text-xs uppercase tracking-wide truncate">{item.name}</span>}
             </button>
           ))}
         </div>
 
-        <div className="my-4 border-t border-yemenBlue/20 pt-4">
-          {isOpen && <p className="px-3 text-xs font-semibold text-yemenBlue-light uppercase mb-2">الإدارة الفنية</p>}
-          <button
-            onClick={() => setActiveModule('dns')}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors mb-1 ${
-              activeModule === 'dns' ? 'bg-yemenBlue text-white border-l-4 border-yemenGold' : 'hover:bg-yemenBlue/50'
-            }`}
-          >
-            <Globe size={20} />
-            {isOpen && <span>إدارة DNS (Technitium)</span>}
-          </button>
-          <button
-            onClick={() => setActiveModule('terminal')}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-              activeModule === 'terminal' ? 'bg-yemenBlue text-white border-l-4 border-yemenGold' : 'hover:bg-yemenBlue/50'
-            }`}
-          >
-            <Terminal size={20} />
-            {isOpen && <span>وحدة التحكم (Terminal)</span>}
-          </button>
-          <button
-            onClick={() => setActiveModule('config')}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors mt-1 ${
-              activeModule === 'config' ? 'bg-yemenBlue text-white border-l-4 border-yemenGold' : 'hover:bg-yemenBlue/50'
-            }`}
-          >
-            <FileCode size={20} />
-            {isOpen && <span>مولد الإعدادات</span>}
-          </button>
+        <div className="mb-8">
+          {isOpen && <p className="px-3 text-[10px] font-black text-text-subtle uppercase mb-4 tracking-[0.2em] flex items-center gap-2"><ShieldCheck size={10} className="text-brand-primary" /> {t('sidebar_section_investigation')}</p>}
+          {investigationModules.map(item => (
+            <button key={item.key} onClick={() => setActiveModule(item.key)} className={menuClass(item.key)}>
+              <IconRenderer iconName={item.icon} />
+              {isOpen && <span className="text-xs uppercase tracking-wide truncate">{item.name}</span>}
+            </button>
+          ))}
+        </div>
+        
+        <div className="mb-8">
+          {isOpen && <p className="px-3 text-[10px] font-black text-text-subtle uppercase mb-4 tracking-[0.2em] flex items-center gap-2"><Database size={10} className="text-purple-600" /> {t('sidebar_section_data_core')}</p>}
+           {dataCoreModules.map(item => (
+            <button key={item.key} onClick={() => setActiveModule(item.key)} className={menuClass(item.key)}>
+              <IconRenderer iconName={item.icon} />
+              {isOpen && <span className="text-xs uppercase tracking-wide truncate">{item.name}</span>}
+            </button>
+          ))}
+        </div>
+
+        <div className="mb-8">
+          {isOpen && <p className="px-3 text-[10px] font-black text-text-subtle uppercase mb-4 tracking-[0.2em] flex items-center gap-2"><Palette size={10} className="text-purple-600" /> {t('sidebar_section_identity')}</p>}
+           {identityProvisioning.map(item => (
+            <button key={item.key} onClick={() => setActiveModule(item.key)} className={menuClass(item.key)}>
+              <IconRenderer iconName={item.icon} />
+              {isOpen && <span className="text-xs uppercase tracking-wide truncate">{item.name}</span>}
+            </button>
+          ))}
+        </div>
+
+        <div className="mb-8">
+          {isOpen && <p className="px-3 text-[10px] font-black text-text-subtle uppercase mb-4 tracking-[0.2em]">{t('sidebar_section_core')}</p>}
+          {coreModules.map(item => (
+            <button key={item.key} onClick={() => setActiveModule(item.key)} className={menuClass(item.key)}>
+              <IconRenderer iconName={item.icon} />
+              {isOpen && <span className={`text-xs uppercase tracking-wide ${item.key === 'terminal' ? 'font-mono' : ''}`}>{item.name}</span>}
+            </button>
+          ))}
         </div>
       </nav>
 
-      <div className="p-4 border-t border-yemenBlue/20">
+      <div className="p-4 border-t border-border-subtle bg-canvas/50">
         <button 
           onClick={toggle}
-          className="w-full flex items-center justify-center p-2 rounded bg-yemenBlue/30 hover:bg-yemenBlue/50 transition-colors"
+          className="w-full flex items-center justify-center p-3 rounded-xl bg-panel hover:bg-brand-primary hover:text-white transition-all duration-300 border border-border-subtle shadow-sm group"
         >
           {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
         </button>
