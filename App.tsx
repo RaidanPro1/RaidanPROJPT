@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Layout, Dashboard, Settings, Brain, Shield, Database, Microscope, Radio, HardDrive, Terminal, Zap, Map, Globe } from 'lucide-react';
+import { Layout, Dashboard, Settings, Brain, Shield, Database, Microscope, Radio, HardDrive, Terminal, Zap, Map, Globe, Activity } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ServicesGrid from './components/ServicesGrid';
@@ -10,11 +10,12 @@ import ConfigGenerator from './components/ConfigGenerator';
 import WorkflowManager from './components/WorkflowManager';
 import InfrastructureStrategy from './components/InfrastructureStrategy';
 import DNSManager from './components/DNSManager';
+import SystemDiagnostic from './components/SystemDiagnostic';
 import { Service, ModuleType } from './types';
 import { INITIAL_SERVICES } from './constants';
 
 const App: React.FC = () => {
-  const [activeModule, setActiveModule] = useState<ModuleType | 'dashboard' | 'terminal' | 'config' | 'pipeline' | 'strategy' | 'dns'>('dashboard');
+  const [activeModule, setActiveModule] = useState<ModuleType | 'dashboard' | 'terminal' | 'config' | 'pipeline' | 'strategy' | 'dns' | 'diagnostic'>('dashboard');
   const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -35,21 +36,35 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleServiceAction = (id: string, action: 'start' | 'stop' | 'restart') => {
+  const handleServiceAction = async (id: string, action: 'start' | 'stop' | 'restart') => {
+    const serviceName = services.find(s => s.id === id)?.name;
+    console.log(`[SYSTEM] Initiating ${action} for ${serviceName} via /api/v1/system/services/${id}/${action}`);
+
+    // Optimistic UI Update: Change status locally before API confirms
     setServices(prev => prev.map(s => {
       if (s.id === id) {
-        if (action === 'start') return { ...s, status: 'running', cpu: 1, ram: 256 };
-        if (action === 'stop') return { ...s, status: 'stopped', cpu: 0, ram: 0 };
+        if (action === 'start') return { ...s, status: 'restarting' }; // Transition state
+        if (action === 'stop') return { ...s, status: 'restarting' }; 
         if (action === 'restart') return { ...s, status: 'restarting' };
       }
       return s;
     }));
 
-    if (action === 'restart') {
-      setTimeout(() => {
-        setServices(prev => prev.map(s => s.id === id ? { ...s, status: 'running' } : s));
-      }, 2000);
-    }
+    // Simulate API Latency (1.5 seconds)
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Confirm Change
+    setServices(prev => prev.map(s => {
+      if (s.id === id) {
+        if (action === 'start' || action === 'restart') {
+          return { ...s, status: 'running', cpu: 2, ram: 512 };
+        }
+        if (action === 'stop') {
+          return { ...s, status: 'stopped', cpu: 0, ram: 0 };
+        }
+      }
+      return s;
+    }));
   };
 
   const renderContent = () => {
@@ -70,6 +85,8 @@ const App: React.FC = () => {
         return <ConfigGenerator />;
       case 'dns':
         return <DNSManager />;
+      case 'diagnostic':
+        return <SystemDiagnostic services={services} />;
       case 'terminal':
         return (
           <div className="bg-black text-green-500 p-4 font-mono h-[calc(100vh-160px)] rounded-lg shadow-inner overflow-y-auto custom-scrollbar">
@@ -83,10 +100,12 @@ const App: React.FC = () => {
               <div>SERVICE</div><div>MODULE</div><div>STATUS</div><div>RESOURCE</div>
             </div>
             {services.map(s => (
-              <div key={s.id} className="grid grid-cols-4 gap-4 py-1">
+              <div key={s.id} className="grid grid-cols-4 gap-4 py-1 text-sm">
                 <div>{s.name}</div>
                 <div className="truncate opacity-60 text-xs">{s.module}</div>
-                <div className={s.status === 'running' ? 'text-green-400' : 'text-red-400'}>{s.status.toUpperCase()}</div>
+                <div className={s.status === 'running' ? 'text-green-400' : s.status === 'restarting' ? 'text-yellow-400' : 'text-red-400'}>
+                    {s.status.toUpperCase()}
+                </div>
                 <div className="opacity-50 text-[10px]">{s.cpu.toFixed(1)}% | {(s.ram / 1024).toFixed(1)}GB</div>
               </div>
             ))}

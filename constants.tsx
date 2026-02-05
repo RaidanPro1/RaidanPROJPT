@@ -2,14 +2,14 @@
 import { ModuleInfo, Service } from './types';
 
 export const MODULES: ModuleInfo[] = [
-  { id: 'brain', title: 'النواة الذكية (Local AI)', icon: '🧠', description: 'Ollama, Llama 3, Whisper, Lobe Chat, Qwen' },
-  { id: 'watchtower', title: 'الاستخبارات (Watchtower)', icon: '🔭', description: 'SearXNG, n8n, SpiderFoot, Sherlock, Maigret, Kepler' },
+  { id: 'brain', title: 'النواة الذكية (Local AI)', icon: '🧠', description: 'Ollama, Llama 3, Whisper, Lobe Chat, Qwen, Open WebUI' },
+  { id: 'watchtower', title: 'الاستخبارات (Watchtower)', icon: '🔭', description: 'SearXNG, n8n, SpiderFoot, Sherlock, Maigret, Kepler, Sentinel-2' },
   { id: 'cleanroom', title: 'التحليل الجنائي (Clean Room)', icon: '🔬', description: 'Sherloq, Ghiro, AV Lab, Joytag, ExifRead' },
   { id: 'warroom', title: 'مراقبة الأزمات (War Room)', icon: '🛰️', description: 'Ushahidi, SORMAS, OpenRouteService' },
   { id: 'vault', title: 'الأرشفة (The Vault)', icon: '🔐', description: 'Aleph, ArchiveBox, PhotoPrism, SiYuan, ToolJet' },
   { id: 'media', title: 'الإنتاج والنشر (Media)', icon: '🎬', description: 'Ghost, Owncast, AzuraCast, Postiz, Payload, FFmpeg' },
-  { id: 'shield', title: 'الأمن (The Shield)', icon: '🛡️', description: 'SecureDrop, Nextcloud, Mattermost, Vaultwarden, Kasm' },
-  { id: 'hosting', title: 'إدارة البنية (Hosting)', icon: '🏗️', description: 'Coolify, Portainer, Nginx PM, Traefik, Supabase' },
+  { id: 'shield', title: 'الأمن (The Shield)', icon: '🛡️', description: 'SecureDrop, Nextcloud, Mattermost, Vaultwarden, Kasm, Keycloak' },
+  { id: 'hosting', title: 'إدارة البنية (Hosting)', icon: '🏗️', description: 'Coolify, Portainer, Nginx PM, Traefik, Supabase, Redis, Qdrant' },
 ];
 
 export const INITIAL_SERVICES: Service[] = [
@@ -23,6 +23,9 @@ export const INITIAL_SERVICES: Service[] = [
   { id: 'b7', name: 'Qwen2.5-Sex', module: 'brain', status: 'running', cpu: 4, ram: 2048, description: 'تصنيف المحتوى وتحليل التحيز الجندري', image: 'systemsrx/qwen-sex' },
   { id: 'b8', name: 'NextChat', module: 'brain', status: 'running', cpu: 1, ram: 256, description: 'واجهة خفيفة للنماذج اللغوية', image: 'chatgptnextweb/nextchat' },
   { id: 'b9', name: 'Press-to-Talk', module: 'brain', status: 'stopped', cpu: 0, ram: 0, description: 'واجهة تفاعل صوتي فورية مع العقل الرقمي', image: 'aiaicaramba/p2t' },
+  { id: 'b10', name: 'Open WebUI', module: 'brain', status: 'running', cpu: 4, ram: 4096, description: 'الواجهة التفاعلية المتطورة لإدارة LLMs والمحادثة مع العقل الرقمي', image: 'openwebui/openwebui:latest' },
+  { id: 'b11', name: 'LibreTranslate', module: 'brain', status: 'running', cpu: 4, ram: 2048, description: 'محرك ترجمة محلي يدعم العربية والإنجليزية', image: 'libretranslate/libretranslate' },
+  { id: 'b12', name: 'SexBiasAnalysis', module: 'brain', status: 'stopped', cpu: 0, ram: 0, description: 'تحليل الانحياز الجندري في المخرجات النصية', image: 'aspratle/sexbias' },
 
   // --- Watchtower (OSINT & Intelligence) ---
   { id: 'w1', name: 'SearXNG', module: 'watchtower', status: 'running', cpu: 2, ram: 512, description: 'محرك بحث خصوصي مجمع', image: 'searxng/searxng' },
@@ -33,12 +36,19 @@ export const INITIAL_SERVICES: Service[] = [
   { id: 'w6', name: 'Kepler.gl', module: 'watchtower', status: 'running', cpu: 3, ram: 1024, description: 'تحليل البيانات الجغرافية وخرائط النزاع', image: 'keplergl/keplergl' },
   { id: 'w7', name: 'Huginn', module: 'watchtower', status: 'running', cpu: 5, ram: 2048, description: 'نظام وكلاء لرصد الويب والتغييرات', image: 'huginn/huginn' },
   { id: 'w8', name: 'TrendRadar', module: 'watchtower', status: 'stopped', cpu: 0, ram: 0, description: 'رصد الاتجاهات والمواضيع الشائعة', image: 'sansan0/trendradar' },
+  { id: 'w9', name: 'Sentinel-2 Node', module: 'watchtower', status: 'running', cpu: 8, ram: 4096, description: 'معالجة صور الأقمار الصناعية للرصد الميداني', image: 'esa/sentinel2' },
 
   // --- Clean Room (Forensics) ---
   { id: 'c1', name: 'Ghiro', module: 'cleanroom', status: 'running', cpu: 5, ram: 1024, description: 'تحليل جنائي آلي للصور', image: 'ghiro/ghiro' },
   { id: 'c2', name: 'Sherloq', module: 'cleanroom', status: 'running', cpu: 1, ram: 512, description: 'أدوات فحص ميتاداتا الصور المتقدمة', image: 'revalo/sherloq' },
   { id: 'c3', name: 'AV Processing Lab', module: 'cleanroom', status: 'running', cpu: 10, ram: 2048, description: 'مختبر معالجة الصوت والفيديو بالذكاء الاصطناعي', image: 'dharmendra/av-lab' },
   { id: 'c4', name: 'Joytag', module: 'cleanroom', status: 'stopped', cpu: 0, ram: 0, description: 'تصنيف الصور والوسوم آلياً', image: 'starthua/joytag' },
+  { id: 'c5', name: 'ExifRead', module: 'cleanroom', status: 'running', cpu: 1, ram: 256, description: 'استخراج الميتاداتا العميقة من الوثائق', image: 'ianare/exifread' },
+
+  // --- War Room (Crisis Monitoring) ---
+  { id: 'r1', name: 'Ushahidi', module: 'warroom', status: 'running', cpu: 4, ram: 2048, description: 'منصة رسم خرائط الأزمات والتبليغ الميداني', image: 'ushahidi/platform' },
+  { id: 'r2', name: 'SORMAS', module: 'warroom', status: 'stopped', cpu: 0, ram: 0, description: 'نظام رصد الأوبئة وإدارة الأزمات الصحية', image: 'sormas/sormas' },
+  { id: 'r3', name: 'OpenRouteService', module: 'warroom', status: 'running', cpu: 6, ram: 4096, description: 'محرك التوجيه واللوجستيات المستقل', image: 'giscience/openrouteservice' },
 
   // --- Vault (Storage & Archiving) ---
   { id: 'v1', name: 'Aleph (OCCRP)', module: 'vault', status: 'running', cpu: 15, ram: 8192, description: 'الأرشيف المركزي للوثائق المسربة', image: 'alephdata/aleph' },
@@ -62,6 +72,7 @@ export const INITIAL_SERVICES: Service[] = [
   { id: 's3', name: 'Kasm Workspaces', module: 'shield', status: 'running', cpu: 8, ram: 4096, description: 'بيئة المتصفح المعزول لفتح الروابط المشبوهة', image: 'kasmweb/core' },
   { id: 's4', name: 'SecureDrop', module: 'shield', status: 'running', cpu: 4, ram: 2048, description: 'بوابة استقبال التسريبات والوثائق السرية', image: 'securedrop/securedrop' },
   { id: 's5', name: 'Nextcloud Hub', module: 'shield', status: 'running', cpu: 6, ram: 2048, description: 'السحابة السيادية لتخزين المستندات والتعاون', image: 'nextcloud:latest' },
+  { id: 's6', name: 'Keycloak', module: 'shield', status: 'running', cpu: 4, ram: 1024, description: 'نظام إدارة الهوية والدخول الموحد (SSO)', image: 'keycloak/keycloak' },
 
   // --- Hosting (Infrastructure) ---
   { id: 'h1', name: 'Coolify', module: 'hosting', status: 'running', cpu: 4, ram: 1024, description: 'المحرك الأساسي لإدارة الحاويات والانتشار', image: 'coollabsio/coolify' },
@@ -71,4 +82,6 @@ export const INITIAL_SERVICES: Service[] = [
   { id: 'h5', name: 'Supabase Local', module: 'hosting', status: 'stopped', cpu: 0, ram: 0, description: 'بنية تحتية كاملة لقواعد البيانات (بديل Firebase)', image: 'supabase/supabase' },
   { id: 'h6', name: 'WireGuard / Headscale', module: 'hosting', status: 'running', cpu: 1, ram: 256, description: 'الشبكة المشفرة والربط بين العقد', image: 'linuxserver/wireguard' },
   { id: 'h7', name: 'Technitium DNS', module: 'hosting', status: 'running', cpu: 2, ram: 512, description: 'خادم DNS محلي لإدارة النطاقات ومنع الحجب', image: 'technitium/dns-server' },
+  { id: 'h8', name: 'Redis', module: 'hosting', status: 'running', cpu: 2, ram: 512, description: 'خادم تخزين البيانات في الذاكرة (In-memory) لإدارة الكاش والطوابير والمهام المؤقتة', image: 'redis:7-alpine' },
+  { id: 'h9', name: 'Qdrant', module: 'hosting', status: 'running', cpu: 4, ram: 2048, description: 'قاعدة بيانات شعاعية (Vector Database) عالية الأداء لمحركات البحث والذاكرة البعيدة للذكاء الاصطناعي', image: 'qdrant/qdrant:latest' },
 ];

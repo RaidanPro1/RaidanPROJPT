@@ -15,6 +15,7 @@ import {
   Map,
   Video,
   Globe,
+  Activity,
   ChevronRight,
   ChevronLeft
 } from 'lucide-react';
@@ -22,7 +23,7 @@ import { ModuleType } from '../types';
 import { MODULES } from '../constants';
 
 interface SidebarProps {
-  activeModule: ModuleType | 'dashboard' | 'terminal' | 'config' | 'pipeline' | 'strategy' | 'dns';
+  activeModule: ModuleType | 'dashboard' | 'terminal' | 'config' | 'pipeline' | 'strategy' | 'dns' | 'diagnostic';
   setActiveModule: (module: any) => void;
   isOpen: boolean;
   toggle: () => void;
@@ -65,6 +66,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule, isOpen
         >
           <LayoutDashboard size={20} />
           {isOpen && <span>الرئيسية</span>}
+        </button>
+
+        <button
+          onClick={() => setActiveModule('diagnostic')}
+          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+            activeModule === 'diagnostic' ? 'bg-yemenGold text-yemenBlue-dark font-semibold' : 'hover:bg-yemenBlue/50'
+          }`}
+        >
+          <Activity size={20} />
+          {isOpen && <span>الفحص الشامل (Diagnostic)</span>}
         </button>
 
         <button
