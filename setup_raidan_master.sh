@@ -92,7 +92,7 @@ bash deployment/02_deploy_infra.sh || log_error "Core services deployment failed
 log_info "Waiting for database to initialize (15s)..."
 sleep 15
 pip3 install -q psycopg2-binary requests python-dotenv --break-system-packages
-python3 validate_stage.py check_db || log_error "DB validation failed."
+python3 deployment/validate_stage.py check_db || log_error "DB validation failed."
 log_success "Core database and network services are active."
 
 # ==============================================================================
@@ -109,11 +109,11 @@ log_phase 6 "APPLICATION LAYER DEPLOYMENT"
 bash deployment/04_app.sh || log_error "Application deployment failed."
 log_info "Waiting for application startup (10s)..."
 sleep 10
-python3 validate_stage.py check_api || log_error "API validation failed."
+python3 deployment/validate_stage.py check_api || log_error "API validation failed."
 log_success "Application layer is online."
 
 # ==============================================================================
-# PHASE 7: TENANT PROVISIONING & EMAIL AUTOMATION
+# PHASE 7: DNS & EMAIL AUTOMATION
 # ==============================================================================
 log_phase 7 "DNS & EMAIL AUTOMATION"
 log_info "Syncing DNS records with Cloudflare..."

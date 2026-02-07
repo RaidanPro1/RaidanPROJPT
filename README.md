@@ -1,4 +1,3 @@
-
 # 🇾🇪 RaidanPro: منصة السيادة الرقمية (Sovereign Platform)
 **الإصدار:** 3.2 (Hybrid Edition)
 **الحالة:** Production Ready
@@ -21,46 +20,28 @@
 ---
 
 ## 🚀 دليل التثبيت (Installation Guide)
+The system uses a master deployment script for a streamlined and robust installation process.
 
-يوفر النظام طريقتين للتثبيت، اختر الأنسب لخبرتك التقنية.
-
-### الخيار الأول: التثبيت السريع عبر المعالج (The Wizard)
-هذا الخيار مثالي للبدء السريع عبر واجهة رسومية تفاعلية.
-
-1. **نقل ملفات النظام:**
+1. **Clone the System Repository:**
    ```bash
    git clone https://github.com/RaidanPro/sovereign-core.git /opt/raidan
    cd /opt/raidan
    ```
 
-2. **تشغيل معالج الإطلاق:**
-   سيقوم هذا السكربت بتهيئة البيئة وتشغيل واجهة ويب مؤقتة للتثبيت.
+2. **Run the Master Deployment Script:**
+   This interactive script will guide you through the configuration and orchestrate the entire deployment.
    ```bash
-   chmod +x launch_wizard.sh
-   ./launch_wizard.sh
-   ```
-
-3. **الوصول للمعالج:**
-   افتح المتصفح على الرابط: `http://SERVER_IP:8000`
-   *(ملاحظة: تأكد من السماح للمنفذ 8000 في الجدار الناري مؤقتاً)*
-
----
-
-### الخيار الثاني: التثبيت المتقدم (CLI Master)
-للمحترفين، يتيح هذا السكربت التحكم الكامل في المفاتيح والإعدادات من سطر الأوامر.
-
-1. **تشغيل سكربت القائد:**
-   ```bash
-   cd /opt/raidan
    chmod +x setup_raidan_master.sh
-   ./setup_raidan_master.sh
+   sudo ./setup_raidan_master.sh
    ```
 
-2. **التفاعل:**
-   اتبع التعليمات لإدخال:
-   - اسم النظام والنطاق.
-   - مفاتيح API (Cloudflare, Gemini).
-   - تأكيد إنشاء كلمات المرور المشفرة.
+3. **Follow the Prompts:**
+   The script will ask for essential information such as:
+   - Your root domain (e.g., raidan.pro)
+   - A secure password for the database
+   - API keys for Gemini and Cloudflare
+
+The orchestrator will handle system cleaning, dependency installation, native AI setup, Docker deployment, legal compliance injection, and final system lockdown.
 
 ---
 
@@ -79,14 +60,6 @@
 ---
 
 ## ⚠️ استكشاف الأخطاء (Troubleshooting)
-
-**مشكلة: الرابط `http://localhost:8000` لا يعمل بعد التثبيت**
-*   **السبب:** قد يكون معالج التثبيت (`launch_wizard.sh`) لا يزال يعمل ويحجز المنفذ 8000، مما يمنع خدمة الـ Backend الأساسية من العمل.
-*   **الحل:** قم بإيقاف حاوية المعالج يدوياً ثم أعد تشغيل الخدمات:
-    ```bash
-    docker stop raidan_wizard
-    docker compose -f deployment/docker-compose.prod.yml up -d --force-recreate backend
-    ```
 
 **مشكلة: فشل الاتصال بـ Ollama من داخل الحاويات**
 *   تأكد أن خدمة Ollama على الـ Host مضبوطة للاستماع على جميع العناوين وليس فقط Localhost.

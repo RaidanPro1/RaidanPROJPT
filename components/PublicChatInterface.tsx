@@ -5,7 +5,8 @@ import {
   Send, Bot, User, Sparkles, Zap, Image as ImageIcon, 
   Mic, Paperclip, ChevronDown, RefreshCcw, MoreVertical,
   Settings2, Code2, PenTool, Search, Shield, Server, Cloud,
-  ArrowUpRight
+  // FIX: Import 'History' icon from lucide-react.
+  ArrowUpRight, History
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 

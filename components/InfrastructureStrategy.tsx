@@ -1,62 +1,50 @@
-
-import { Shield, Rocket, Settings, Gauge, Zap, CheckCircle2, Server, Lock, Globe, Database, Cpu, Search, Activity, Share2, Mail } from 'lucide-react';
+import { Shield, Rocket, Settings, Gauge, Zap, CheckCircle2, Server, Lock, Globe, Database, Cpu, Search, Activity, Share2, Mail, Terminal, GitBranch, Brain } from 'lucide-react';
 import React from 'react';
 
 const InfrastructureStrategy: React.FC = () => {
   const phases = [
     {
-      title: "المرحلة الأولى: التأسيس والاتصال (Sovereign Infrastructure)",
-      icon: <Lock className="text-red-500" />,
-      color: "border-red-500",
-      items: [
-        "إعداد Coolify و Nginx Proxy Manager كبوابة مركزية",
-        "نشر Mailu Server لإدارة البريد الإلكتروني السيادي",
-        "تأمين الوصول عبر WireGuard و SSH Hardening",
-        "نشر MinIO (S3) كخزنة مركزية موحدة للملفات"
-      ]
-    },
-    {
-      title: "المرحلة الثانية: العقل المحلي (Native AI Core)",
-      icon: <BrainIcon className="text-purple-500" size={20} />,
-      color: "border-purple-500",
-      items: [
-        "تثبيت Ollama Native (أصلي) لأقصى أداء مع Qwen 2.5",
-        "نشر RAGFlow لفهرسة المستندات والتعامل مع الجداول",
-        "تفعيل Faster-Whisper و Piper TTS للسمع والنطق",
-        "ربط Open WebUI كواجهة تفاعلية آمنة"
-      ]
-    },
-    {
-      title: "المرحلة الثالثة: الاستخبارات والرسوم (Graph Intelligence)",
-      icon: <Share2 className="text-blue-500" size={20} />,
+      title: "المرحلة 1: التكوين والتشخيص (Configuration & Diagnostics)",
+      icon: <Settings className="text-blue-500" />,
       color: "border-blue-500",
       items: [
-        "ربط Neo4j لرسم خرائط شبكات الفساد والارتباطات",
-        "دمج OpenSanctions API للتحقق من قوائم العقوبات",
-        "نشر SearXNG للبحث المجهول وحماية هوية المحقق",
-        "إعداد Maigret لتعقب الحسابات الرقمية عبر اليوزرنيم"
+        "تشغيل المعالج التفاعلي لجمع الإعدادات (النطاق، مفاتيح API).",
+        "توليد ملف البيئة الآمن (.env) مركزيًا.",
+        "تنفيذ بروتوكول 'الأرض المحروقة' (Scorched Earth) لضمان بيئة نظيفة.",
+        "تثبيت المتطلبات الأساسية للنظام (Docker, Python, UFW)."
       ]
     },
     {
-      title: "المرحلة الرابعة: التحقق والعمال (Forensic Workers)",
-      icon: <Zap className="text-orange-500" size={20} />,
-      color: "border-orange-500",
+      title: "المرحلة 2: نشر النواة الأصلية والخدمات (Native & Core Services)",
+      icon: <Cpu className="text-purple-500" />,
+      color: "border-purple-500",
       items: [
-        "نشر TorchGeo Worker لتحليل صور الأقمار الصناعية",
-        "إعداد DeepSafe + yt-dlp لكشف التزييف العميق آلياً",
-        "أتمتة سحب الفيديوهات والميتاداتا للتحليل الجنائي",
-        "جدولة المهام الثقيلة عبر n8n ونظام الطوابير"
+        "تثبيت Ollama مباشرة على نظام التشغيل (Native) للأداء الأقصى.",
+        "سحب نماذج الذكاء الاصطناعي الأساسية (Qwen, Nomic Embed).",
+        "إنشاء الشبكة السيادية المعزولة (172.28.0.0/16).",
+        "نشر حاويات البنية التحتية (Postgres, Traefik) بآيبيهات ثابتة."
       ]
     },
     {
-      title: "المرحلة الخامسة: النشر والصحافة (Newsroom & CMS)",
-      icon: <Shield className="text-green-500" />,
+      title: "المرحلة 3: التدريع القانوني والتطبيقات (Hardening & Apps)",
+      icon: <Shield className="text-red-500" />,
+      color: "border-red-500",
+      items: [
+        "حقن الدستور الرقمي (القانون اليمني) في شخصية الذكاء الاصطناعي.",
+        "إنشاء موديلات 'sovereign' معدلة وملتزمة بالقانون.",
+        "نشر حاويات التطبيقات (Backend API, Frontend UI).",
+        "التحقق من صحة الاتصال بين جميع الطبقات (API, DB, AI)."
+      ]
+    },
+    {
+      title: "المرحلة 4: الأتمتة والتسليم (Automation & Handover)",
+      icon: <Rocket className="text-green-500" />,
       color: "border-green-500",
       items: [
-        "نشر Ghost CMS للمقالات والنشرات البريدية الاستقصائية",
-        "إعداد Strapi (Headless) لإدارة التقارير والبيانات",
-        "تفعيل GlobaLeaks لاستقبال التسريبات عبر شبكة Tor",
-        "تفعيل نظام النسخ الاحتياطي الهجين والمشفر"
+        "تشغيل الأتمتة لمزامنة سجلات DNS مع Cloudflare.",
+        "نشر خدمة البريد الإلكتروني السيادي (Mailcow).",
+        "إنشاء المستخدم الجذر (Root Admin) وتشفير كلمة المرور.",
+        "تفعيل جدار الحماية (UFW) وتوليد تقرير النشر النهائي."
       ]
     }
   ];
@@ -66,24 +54,24 @@ const InfrastructureStrategy: React.FC = () => {
       <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm overflow-hidden relative">
         <div className="absolute top-0 right-0 w-64 h-64 bg-yemenBlue/5 rounded-full -mr-32 -mt-32"></div>
         <div className="relative z-10">
-          <h2 className="text-3xl font-black text-yemenBlue mb-4">استراتيجية التنفيذ السيادي v1.7.2 (The Arsenal Strategy)</h2>
+          <h2 className="text-3xl font-black text-yemenBlue mb-4">استراتيجية النشر السيادي v2.0 (The Agentic Strategy)</h2>
           <p className="text-gray-600 max-w-3xl leading-relaxed">
-            خارطة الطريق التقنية لبناء "الذكاء الهجين والاتصال السيادي". نجمع بين Ollama Native للأداء العالي، Mailu للاتصال المؤمن، والثنائي RAGFlow+Neo4j للتحقيق المعمق.
+            خارطة الطريق التقنية المحدثة لتثبيت المنصة بالكامل عبر المايسترو الآلي. يضمن هذا البروتوكول عملية نشر متسقة، آمنة، وقابلة للتكرار من سطر الأوامر.
           </p>
           <div className="flex gap-4 mt-6">
             <div className="flex items-center gap-2 text-xs font-bold text-yemenBlue bg-blue-50 px-3 py-1.5 rounded-full">
-              <Cpu size={14} />
-              Architecture: Native + Hybrid
+              <Terminal size={14} />
+              Orchestrator: Master Shell Script
             </div>
             <div className="flex items-center gap-2 text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-full">
-              <Shield size={14} />
-              Privacy: Sovereign Email & AI
+              <GitBranch size={14} />
+              Process: Phased & Validated
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {phases.map((phase, idx) => (
           <div key={idx} className={`bg-white rounded-xl border-t-4 ${phase.color} shadow-sm p-6 hover:shadow-md transition-all group relative`}>
             <div className="flex items-center gap-4 mb-6">
@@ -105,55 +93,11 @@ const InfrastructureStrategy: React.FC = () => {
             </div>
           </div>
         ))}
-
-        <div className="lg:col-span-1 bg-gradient-to-br from-yemenBlue-dark to-yemenBlue text-white rounded-xl p-6 flex flex-col justify-between shadow-lg relative overflow-hidden border-b-4 border-yemenGold">
-          <div className="absolute top-0 right-0 opacity-10 rotate-12">
-             <Server size={140} />
-          </div>
-          <div className="relative z-10">
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Gauge size={20} className="text-yemenGold" />
-              مؤشرات السيادة والاتصال
-            </h3>
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] uppercase font-bold text-blue-200 tracking-wider">
-                  <span>كفاءة البريد (Mailu)</span>
-                  <span>100% Encrypted</span>
-                </div>
-                <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-green-400 h-full w-full"></div>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] uppercase font-bold text-blue-200 tracking-wider">
-                  <span>أداء الـ AI (Ollama Native)</span>
-                  <span>Max Throughput</span>
-                </div>
-                <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-yemenGold h-full w-full shadow-[0_0_8px_rgba(212,175,55,0.4)]"></div>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] uppercase font-bold text-blue-200 tracking-wider">
-                  <span>دقة فحص التزييف (DeepSafe)</span>
-                  <span>High Fidelity</span>
-                </div>
-                <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-blue-400 h-full w-[85%]"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <button className="mt-8 bg-yemenGold hover:bg-yemenGold-light text-yemenBlue-dark font-black py-2.5 rounded-lg text-xs transition-all flex items-center justify-center gap-2">
-            <Search size={14} />
-            توليد تقرير الامتثال الهجين
-          </button>
-        </div>
       </div>
     </div>
   );
 };
+
 
 const BrainIcon: React.FC<{size?: number, className?: string}> = ({size = 24, className = ""}) => (
   <svg 
