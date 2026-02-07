@@ -3,35 +3,42 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // RBAC Roles
 export type UserRole = 'root' | 'org_admin' | 'org_user' | 'journalist' | 'viewer';
+export type RoutingScenario = 'scenario_a' | 'scenario_b' | 'scenario_c';
 
-export interface RoutingScenario {
-  id: 'scenario_a' | 'scenario_b' | 'scenario_c';
-  label: string;
-  description: string;
-  enforceLocalForSecret: boolean;
-  allowWebSearch: boolean;
-}
-
-// Define the shape of your settings
 export interface AppSettings {
+  isInstalled: boolean;
+  rootDomain: string; 
   coolifyEndpoint: string;
   coolifyToken: string;
   resourceMode: 'balanced' | 'tactical';
   ollamaModels: { id: string; name: string; active: boolean }[];
   
-  // Google Services Governance Config (Hybrid Intelligence)
   googleConfig: {
     apiKey: string; 
     enableSearchGrounding: boolean;
     thinkingBudget: number; 
     safetyThreshold: 'block_all' | 'block_some' | 'allow_adult';
-    temperature: number; // 0.0 - 1.0
-    systemInstruction: string; // The injected constitution
+    temperature: number;
+    systemInstruction: string;
+    defaultModel: string;
+  };
+
+  apiMatrix: {
+    geoNames: string;
+    nasaEarth: string;
+    worldBank: string;
+    hdx: string;
+    who: string;
+    newsApi: string;
+    alphaVantage: string;
+    openSky: string;
+    openAq: string;
+    coinGecko: string;
+    monitoredNewsSites: { name: string; url: string; category: 'official' | 'opposition' | 'independent' }[];
+    socialKeywords: string[];
   };
   
-  // Adaptive Routing Logic
-  activeRoutingScenario: 'scenario_a' | 'scenario_b' | 'scenario_c';
-
+  activeRoutingScenario: RoutingScenario;
   systemDoctrine: string; 
   modules: {
     chat: boolean;
@@ -40,51 +47,53 @@ export interface AppSettings {
     dialect: boolean;
     newsroom: boolean;
   };
-  cfToken: string;
-  gdeltMonitoring: boolean;
-  nasaFirmsKey: string;
-  mapTilerKey: string;
-  
-  // Identity & Access
   userRole: UserRole;
-  orgName?: string;
 }
 
-interface SettingsContextType {
-  settings: AppSettings;
-  userRole: UserRole;
-  updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
-  updateGoogleConfig: (config: Partial<AppSettings['googleConfig']>) => void;
-  setRoutingScenario: (scenario: AppSettings['activeRoutingScenario']) => void;
-  toggleModule: (mod: keyof AppSettings['modules']) => void;
-  setDefaultOllamaModel: (id: string) => void;
-  toggleUserRole: () => void;
-}
+const defaultSystemInstruction = `بروتوكول التفعيل الذاتي لمركز YemenJPT - المحرك السيادي "علام" (إصدار 2026 - v7.0)
+أنت "علام" (Allam)، نظام الاستخبارات العربي والسيادي الأول لليمن.
+
+مهمتك المركزية: تقديم إجابات دقيقة، رصينة، وتلتزم بالهوية الوطنية اليمنية.
+استخدم دائماً الحقائق الموثقة واجعل ردودك موجهة لدعم صناع القرار والصحفيين الاستقصائيين.`;
 
 const defaultSettings: AppSettings = {
-    coolifyEndpoint: 'https://ops.raidan.pro/api/v1',
-    coolifyToken: 'CR_TOKEN_8821_SOVEREIGN',
+    isInstalled: false,
+    rootDomain: 'localhost', 
+    coolifyEndpoint: 'https://ops.yemenjpt.pro/api/v1',
+    coolifyToken: 'YJPT_TOKEN_SOVEREIGN',
     resourceMode: 'balanced',
     ollamaModels: [
-      { id: 'qwen2.5', name: 'Qwen-2.5-Coder-7B', active: true },
-      { id: 'llama3', name: 'Llama-3-Sovereign-8B', active: false },
-      { id: 'mistral', name: 'Mistral-Nemo-12B', active: false },
+      { id: 'qwen2.5-sovereign', name: 'سيف (Saif-14B Native)', active: false },
+      { id: 'allam-native', name: 'علام (Allam-Arabic-Core)', active: true },
     ],
     googleConfig: {
         apiKey: process.env.API_KEY || '', 
         enableSearchGrounding: true,
         thinkingBudget: 0,
         safetyThreshold: 'block_some',
-        temperature: 0.3,
-        systemInstruction: `أنت نظام ذكاء اصطناعي يمني سيادي. 
-يجب عليك الالتزام بقانون الصحافة لعام 1990 وميثاق الشرف المهني.
-يمنع منعاً باتاً توليد محتوى يمس الثوابت الوطنية أو يثير النعرات.
-في التحليل السياسي، التزم الحياد التام والمصادر الموثقة.`
+        temperature: 0.2,
+        systemInstruction: defaultSystemInstruction,
+        defaultModel: 'gemini-3-flash-preview'
     },
-    activeRoutingScenario: 'scenario_c', // Hybrid by default
-    systemDoctrine: `[SOVEREIGN_PROTOCOL_v2.0]
-- CLASSIFICATION: CONFIDENTIAL
-- JURISDICTION: REPUBLIC OF YEMEN`,
+    apiMatrix: {
+      geoNames: 'YJPT_GEO',
+      nasaEarth: 'NASA_LENS',
+      worldBank: 'Active',
+      hdx: 'YEM_HUMANITARIAN',
+      who: 'WHO_DATA_PORTAL',
+      newsApi: 'YEMEN_NEWS_STREAM',
+      alphaVantage: 'FX_MONITOR',
+      openSky: 'AIR_TRAFFIC',
+      openAq: 'CLIMATE_AIR',
+      coinGecko: 'P2P_INDEX',
+      monitoredNewsSites: [
+        { name: 'وكالة سبأ', url: 'saba.ye', category: 'official' },
+        { name: 'عدن الغد', url: 'adengad.net', category: 'independent' }
+      ],
+      socialKeywords: ['رواتب', 'انقطاع الكهرباء', 'صرف الدولار', 'مظاهرات']
+    },
+    activeRoutingScenario: 'scenario_c',
+    systemDoctrine: `[ALLAM_SOVEREIGN_PROTOCOL_v7.0]`,
     modules: {
       chat: true,
       deepsafe: true,
@@ -92,11 +101,7 @@ const defaultSettings: AppSettings = {
       dialect: true,
       newsroom: true
     },
-    cfToken: 'CF_API_PRO_9221',
-    gdeltMonitoring: true,
-    nasaFirmsKey: 'NASA_SENTINEL_X99',
-    mapTilerKey: '',
-    userRole: 'root' 
+    userRole: 'root'
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -105,64 +110,53 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
 
   useEffect(() => {
-    const savedSettings = localStorage.getItem('raidan_app_settings_v2');
+    const savedSettings = localStorage.getItem('yemenjpt_app_settings_v12');
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
-        setSettings(current => ({ 
-            ...defaultSettings, 
-            ...parsed, 
-            googleConfig: { ...defaultSettings.googleConfig, ...parsed.googleConfig } 
-        }));
-      } catch (e) { console.error("Failed to parse saved settings:", e); }
+        setSettings({ ...defaultSettings, ...parsed, userRole: 'root' });
+      } catch (e) { console.error(e); }
     }
   }, []);
   
-  const save = (newSettings: AppSettings) => {
-      setSettings(newSettings);
-      localStorage.setItem('raidan_app_settings_v2', JSON.stringify(newSettings));
-  };
-
   const updateSetting = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
-    save({ ...settings, [key]: value });
+    const newSettings = { ...settings, [key]: value };
+    setSettings(newSettings);
+    localStorage.setItem('yemenjpt_app_settings_v12', JSON.stringify(newSettings));
   };
 
   const updateGoogleConfig = (config: Partial<AppSettings['googleConfig']>) => {
-      save({ ...settings, googleConfig: { ...settings.googleConfig, ...config } });
+      updateSetting('googleConfig', { ...settings.googleConfig, ...config });
   };
 
-  const setRoutingScenario = (scenario: AppSettings['activeRoutingScenario']) => {
-      save({ ...settings, activeRoutingScenario: scenario });
+  const updateApiMatrix = (config: Partial<AppSettings['apiMatrix']>) => {
+      updateSetting('apiMatrix', { ...settings.apiMatrix, ...config });
   };
 
-  const toggleUserRole = () => {
-    const roles: UserRole[] = ['root', 'org_admin', 'org_user'];
-    const currentIndex = roles.indexOf(settings.userRole);
-    const nextRole = roles[(currentIndex + 1) % roles.length];
-    updateSetting('userRole', nextRole);
-  };
-
-  const toggleModule = (mod: keyof AppSettings['modules']) => {
-    save({ ...settings, modules: { ...settings.modules, [mod]: !settings.modules[mod] } });
+  const setRoutingScenario = (scenario: RoutingScenario) => {
+      updateSetting('activeRoutingScenario', scenario);
   };
 
   const setDefaultOllamaModel = (id: string) => {
-    save({ ...settings, ollamaModels: settings.ollamaModels.map(m => ({ ...m, active: m.id === id })) });
+    const updatedModels = settings.ollamaModels.map(m => ({
+      ...m,
+      active: m.id === id
+    }));
+    updateSetting('ollamaModels', updatedModels);
   };
 
-  const value = { 
-      settings, 
-      userRole: settings.userRole,
-      updateSetting, 
-      updateGoogleConfig, 
-      setRoutingScenario,
-      toggleModule, 
-      setDefaultOllamaModel, 
-      toggleUserRole 
+  const completeInstallation = (domain: string) => {
+    const newSettings = { 
+        ...settings, 
+        isInstalled: true, 
+        rootDomain: domain 
+    };
+    setSettings(newSettings);
+    localStorage.setItem('yemenjpt_app_settings_v12', JSON.stringify(newSettings));
   };
 
   return (
-    <SettingsContext.Provider value={value}>
+    <SettingsContext.Provider value={{ settings, userRole: 'root', updateSetting, updateGoogleConfig, updateApiMatrix, setRoutingScenario, setDefaultOllamaModel, completeInstallation }}>
       {children}
     </SettingsContext.Provider>
   );
@@ -170,8 +164,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const useSettings = () => {
   const context = useContext(SettingsContext);
-  if (context === undefined) {
-    throw new Error('useSettings must be used within a SettingsProvider');
-  }
+  if (!context) throw new Error('useSettings must be used within a SettingsProvider');
   return context;
 };
+
+interface SettingsContextType {
+  settings: AppSettings;
+  userRole: UserRole;
+  updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
+  updateGoogleConfig: (config: Partial<AppSettings['googleConfig']>) => void;
+  updateApiMatrix: (config: Partial<AppSettings['apiMatrix']>) => void;
+  setRoutingScenario: (scenario: RoutingScenario) => void;
+  setDefaultOllamaModel: (id: string) => void;
+  completeInstallation: (domain: string) => void;
+}

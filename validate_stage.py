@@ -13,7 +13,7 @@ DB_USER = os.getenv("DB_USER", "raidan_root")
 DB_PASS = os.getenv("DB_PASSWORD")
 DB_NAME = "raidan_core"
 
-OLLAMA_HOST = "http://172.28.0.20:11434"
+OLLAMA_HOST = "http://172.28.0.1:11434" # Docker Gateway IP to Host
 BACKEND_URL = "http://172.28.0.30:8000"
 GATEWAY_URL = "http://172.28.0.2:80" # Traefik internal port
 
@@ -55,7 +55,7 @@ def check_ai():
 def check_api():
     print("🔍 [PROBE] Checking Backend Health...")
     try:
-        res = requests.get(f"{BACKEND_URL}/health", timeout=5)
+        res = requests.get(f"{BACKEND_URL}/", timeout=5) # Root endpoint for health check
         if res.status_code == 200:
             print("   ✅ Backend API: OK")
             return True

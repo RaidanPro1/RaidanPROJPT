@@ -1,118 +1,109 @@
 version: '3.8'
 
-# 🇾🇪 RaidanPro Sovereign Architecture v3.1
-# Network: Sovereign Net (172.28.0.0/16) - External
-# Strategy: Native AI (Host) + Static IP Containers
+# 🇾🇪 YemenJPT Sovereign Microservices Architecture v2.0
+# Networks: yemenjpt-net (172.20.0.0/16)
+# Ports: Gateway(8000), ImageLab(8081), AudioLab(8082), VideoLab(8083), AI-Proxy(4000), VectorDB(6333)
 
 networks:
-  sovereign_net:
-    external: true
+  yemenjpt-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 volumes:
+  qdrant_data:
   postgres_data:
-  redis_data:
   minio_data:
 
 services:
-  # --- Layer 1: The Gatekeeper (Reverse Proxy) ---
-  traefik:
-    image: traefik:v3.0
-    container_name: raidan_gateway
-    restart: always
-    command:
-      - "--api.insecure=true" # Secure this in production
-      - "--providers.docker=true"
-      - "--entrypoints.web.address=:80"
+  # 1. The Gateway (Orchestrator) - FastAPI
+  gateway:
+    build: ./backend
+    container_name: yjpt_gateway
     ports:
-      - "80:80"
-      - "8080:8080" # Dashboard
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      sovereign_net:
-        ipv4_address: 172.28.0.2
-
-  # --- Layer 2: The Vault (Database) ---
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: raidan_db
-    restart: always
+      - "8000:8000"
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      - IMAGE_LAB_URL=http://172.20.0.81:8080/mklab-iti
+      - AUDIO_LAB_URL=http://172.20.0.82:8082
+      - AI_GATEWAY_URL=http://172.20.0.40:4000
+    networks:
+      yemenjpt-net:
+        ipv4_address: 172.20.0.10
+
+  # 2. Image Forensics Lab - Java 8 + Tomcat 9
+  image-lab:
+    image: tomcat:9-jdk8-openjdk-slim
+    container_name: yjpt_image_lab
+    ports:
+      - "8081:8080"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./yemen_core_backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./labs/image/mklab.war:/usr/local/tomcat/webapps/mklab-iti.war
+      - ./labs/image/libs/libExportDCT.so:/usr/lib/libExportDCT.so
     networks:
-      sovereign_net:
-        ipv4_address: 172.28.0.10
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      yemenjpt-net:
+        ipv4_address: 172.20.0.81
 
-  redis:
-    image: redis/redis-stack:latest
-    container_name: raidan_cache
-    restart: always
+  # 3. Audio Forensics Lab - Python 3.9 + Demucs
+  audio-lab:
+    build: ./labs/audio
+    container_name: yjpt_audio_lab
+    ports:
+      - "8082:8082"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      yemenjpt-net:
+        ipv4_address: 172.20.0.82
+
+  # 4. Video Intelligence Lab - Python 3.10 + Video-LLaVA
+  video-lab:
+    build: ./labs/video
+    container_name: yjpt_video_lab
+    ports:
+      - "8083:8083"
+    networks:
+      yemenjpt-net:
+        ipv4_address: 172.20.0.83
+
+  # 5. AI Gateway - LiteLLM
+  ai-gateway:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: yjpt_ai_proxy
+    ports:
+      - "4000:4000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OLLAMA_API_BASE=http://172.20.0.1:11434
+    networks:
+      yemenjpt-net:
+        ipv4_address: 172.20.0.40
+
+  # 6. Context Engine - Qdrant Vector DB
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: yjpt_vector_db
+    ports:
+      - "6333:6333"
     volumes:
-      - redis_data:/data
+      - qdrant_data:/qdrant/storage
     networks:
-      sovereign_net:
-        ipv4_address: 172.28.0.12
+      yemenjpt-net:
+        ipv4_address: 172.20.0.60
 
-  # --- Layer 3: Application Logic ---
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: raidan_api
-    restart: always
-    environment:
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@172.28.0.10:5432/${DB_NAME}
-      - OLLAMA_HOST=${OLLAMA_HOST}
-      - SERVER_PUBLIC_IP=${SERVER_PUBLIC_IP}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      sovereign_net:
-        ipv4_address: 172.28.0.30
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=PathPrefix(`/api`)"
-      - "traefik.http.services.api.loadbalancer.server.port=8000"
-
-  yemen-core:
-    build:
-      context: ./yemen_core_backend
-      dockerfile: Dockerfile
-    container_name: raidan_yemen_core
-    restart: always
-    environment:
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@172.28.0.10:5432/${DB_NAME}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      sovereign_net:
-        ipv4_address: 172.28.0.31
-
-  # --- Layer 4: Interface ---
+  # Frontend UI
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: raidan_ui
-    restart: always
-    depends_on:
-      - backend
+    container_name: yjpt_ui
+    ports:
+      - "80:80"
     networks:
-      sovereign_net:
-        ipv4_address: 172.28.0.32
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.ui.rule=PathPrefix(`/`)"
-      - "traefik.http.services.ui.loadbalancer.server.port=80"
+      yemenjpt-net:
+        ipv4_address: 172.20.0.32

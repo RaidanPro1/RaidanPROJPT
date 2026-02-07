@@ -2,9 +2,8 @@
 set -e # Stop execution immediately on error
 
 # ==============================================================================
-# 🇾🇪 RAIDAN PRO MASTER DEPLOYMENT SCRIPT v1.2 (Hybrid/Native)
-# Target OS: Debian 13 (Trixie)
-# Architect: Senior SRE Team
+# 🇾🇪 RAIDAN PRO MASTER DEPLOYMENT SCRIPT v2.0 (Agentic Edition)
+# Target OS: Debian 13 (Trixie) / Ubuntu 24.04
 # ==============================================================================
 
 # Colors & Formatting
@@ -16,233 +15,123 @@ NC='\033[0m' # No Color
 BOLD='\033[1m'
 
 # Helpers
-log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_err() { echo -e "${RED}[ERROR]${NC} $1"; }
-print_header() {
-    echo -e "\n${BOLD}============================================================${NC}"
-    echo -e "   $1"
-    echo -e "${BOLD}============================================================${NC}\n"
+log_phase() {
+    echo -e "\n${BOLD}${BLUE}============================================================${NC}"
+    echo -e "  PHASE $1: $2"
+    echo -e "${BOLD}${BLUE}============================================================${NC}\n"
 }
+log_success() { echo -e "${GREEN}✅ SUCCESS:${NC} $1"; }
+log_error() { echo -e "${RED}❌ FAILED:${NC} $1"; exit 1; }
+log_info() { echo -e "   - $1"; }
 
 # Trap Errors
 error_handler() {
-    echo -e "\n${RED}🚨 CRITICAL FAILURE DETECTED 🚨${NC}"
-    echo -e "Execution stopped at line $1."
-    echo -e "System state might be unstable. Check logs."
-    exit 1
+    log_error "Execution stopped at line $1. System state might be unstable."
 }
 trap 'error_handler $LINENO' ERR
 
 # Check Root
 if [[ $EUID -ne 0 ]]; then
-   log_err "This script must be run as root."
-   exit 1
+   log_error "This script must be run as root."
 fi
 
 # ==============================================================================
-# PHASE 0: PRE-FLIGHT INTERACTIVE CONFIGURATION
+# PHASE 1: INTERACTIVE CONFIGURATION
 # ==============================================================================
-print_header "PHASE 0: PRE-FLIGHT CONFIGURATION"
+log_phase 1 "INTERACTIVE CONFIGURATION & .ENV GENERATION"
 
-echo -e "${YELLOW}Warning: You are about to deploy RaidanPro Sovereign Platform.${NC}"
-echo -e "Ensure you have your API keys ready.\n"
-
-# Inputs
-read -p "System Name [RaidanPro]: " SYSTEM_NAME
-SYSTEM_NAME=${SYSTEM_NAME:-RaidanPro}
-
-read -p "Root Domain [raidan.pro]: " ROOT_DOMAIN
+echo -e "${YELLOW}Welcome to the RaidanPro Sovereign Platform deployment orchestrator.${NC}"
+read -p "Enter Root Domain [raidan.pro]: " ROOT_DOMAIN
 ROOT_DOMAIN=${ROOT_DOMAIN:-raidan.pro}
-
-read -p "Timezone [Asia/Aden]: " TIMEZONE
-TIMEZONE=${TIMEZONE:-Asia/Aden}
-
-# Secrets Generation
-echo -e "\n🔐 Generating Cryptographic Keys..."
-DB_PASSWORD=$(openssl rand -base64 16)
-SECRET_KEY=$(openssl rand -hex 32)
-MINIO_SECRET=$(openssl rand -base64 24)
-echo "Generated Secure DB Password."
-echo "Generated App Secret Key."
-
-# API Keys
-read -p "Gemini API Key (Required for Hybrid Mode): " GEMINI_KEY
-read -p "Cloudflare API Token: " CF_TOKEN
-read -p "Cloudflare Zone ID: " CF_ZONE_ID
-
-# Confirmation
-echo -e "\n${BOLD}--- CONFIGURATION SUMMARY ---${NC}"
-echo "System: $SYSTEM_NAME"
-echo "Domain: $ROOT_DOMAIN"
-echo "DB Pass: ****************"
-echo "Timezone: $TIMEZONE"
-echo "-----------------------------"
-read -p "Is this correct? Type 'YES' to proceed: " CONFIRM
-if [[ "$CONFIRM" != "YES" ]]; then
-    log_err "Aborted by user."
-    exit 1
+read -s -p "Enter a secure DB Password (or press Enter to auto-generate): " DB_PASSWORD
+if [ -z "$DB_PASSWORD" ]; then
+    DB_PASSWORD=$(openssl rand -base64 16)
+    echo -e "\nAuto-generated a secure database password."
 fi
+read -p "Enter your Gemini API Key (for Hybrid Intelligence): " GEMINI_KEY
+read -p "Enter your Cloudflare API Token: " CF_TOKEN
+read -p "Enter your Cloudflare Zone ID for '$ROOT_DOMAIN': " CF_ZONE_ID
 
 # Write .env file
 log_info "Writing secure .env file..."
 cat <<EOF > .env
-APP_NAME="$SYSTEM_NAME"
-ROOT_DOMAIN="$ROOT_DOMAIN"
-TIMEZONE="$TIMEZONE"
-DB_USER=raidan_root
-DB_PASSWORD="$DB_PASSWORD"
-SECRET_KEY="$SECRET_KEY"
-S3_ACCESS_KEY="raidan_minio"
-S3_SECRET_KEY="$MINIO_SECRET"
-GEMINI_API_KEY="$GEMINI_KEY"
-CF_API_TOKEN="$CF_TOKEN"
-CF_ZONE_ID="$CF_ZONE_ID"
+# RaidanPro Auto-Generated Config v2.0
+APP_ENV=production
 SERVER_PUBLIC_IP=$(curl -s ifconfig.me)
+ROOT_DOMAIN=${ROOT_DOMAIN}
+DB_USER=raidan_root
+DB_PASSWORD=${DB_PASSWORD}
+SECRET_KEY=$(openssl rand -hex 32)
+GEMINI_API_KEY=${GEMINI_KEY}
+CF_API_TOKEN=${CF_TOKEN}
+CF_ZONE_ID=${CF_ZONE_ID}
+OLLAMA_HOST=http://172.28.0.1:11434
 EOF
 chmod 600 .env
-log_success "Environment configured."
+log_success ".env file created and secured."
 
 # ==============================================================================
-# PHASE 1: SCORCHED EARTH PROTOCOL
+# PHASE 2: SYSTEM DIAGNOSTICS & PREREQUISITES
 # ==============================================================================
-print_header "PHASE 1: OPERATION SCORCHED EARTH"
-
-log_warn "Cleaning system environment..."
-
-# Stop Services
-systemctl stop apache2 nginx 2>/dev/null || true
-systemctl disable apache2 nginx 2>/dev/null || true
-
-# Purge Docker (Fail-safe)
-if command -v docker &> /dev/null; then
-    log_info "Cleaning Docker containers (keeping engine)..."
-    docker stop $(docker ps -a -q) 2>/dev/null || true
-    docker system prune -a -f --volumes 2>/dev/null || true
-fi
-
-# Clean Directories
-rm -rf /opt/raidan_data
-mkdir -p /opt/raidan_data/{postgres,redis,ollama,minio,logs}
-
-# Update System
-log_info "Updating Debian 13 packages..."
-apt-get update && apt-get dist-upgrade -y
-apt-get install -y curl wget git python3-pip python3-venv jq ufw pciutils
-
-log_success "System Sterilized & Updated."
+log_phase 2 "SYSTEM DIAGNOSTICS & PREREQUISITES"
+bash deployment/00_wipe.sh || log_error "System wipe protocol failed."
+log_success "System sterilized & prerequisites installed."
 
 # ==============================================================================
-# PHASE 2: CORE INFRASTRUCTURE LAYER
+# PHASE 3: NATIVE OLLAMA & MODEL PULL
 # ==============================================================================
-print_header "PHASE 2: CORE INFRASTRUCTURE BUILD"
+log_phase 3 "NATIVE OLLAMA SETUP & MODEL PULL"
+bash deployment/02_brain.sh || log_error "Native AI setup failed."
+log_success "Native AI Core is ready and models are pulled."
 
-# Install Python Deps using VENV to avoid System Conflicts
-log_info "Setting up Python Virtual Environment..."
-python3 -m venv /opt/raidan_data/venv
-VENV_PYTHON="/opt/raidan_data/venv/bin/python"
-VENV_PIP="/opt/raidan_data/venv/bin/pip"
-
-# Upgrade pip and install requirements in isolation
-# Added: python-dotenv (for env loading), httpx (for dns automator)
-log_info "Installing Host Python Dependencies..."
-$VENV_PIP install --upgrade pip
-$VENV_PIP install requests psycopg2-binary google-generativeai python-dotenv httpx
-
-# Network Setup
-log_info "Creating Sovereign Network (172.28.0.0/16)..."
-docker network create --driver bridge --subnet 172.28.0.0/16 --gateway 172.28.0.1 sovereign_net || true
-
-# Deploy Core Services (DB, Redis, MinIO)
-log_info "Deploying Database & Storage..."
-docker compose -f deployment/docker-compose.prod.yml up -d postgres redis
-
-# Wait & Validate
-log_info "Waiting for Database Initialization (15s)..."
+# ==============================================================================
+# PHASE 4: DOCKER DEPLOYMENT (CORE SERVICES)
+# ==============================================================================
+log_phase 4 "DOCKER CORE SERVICES DEPLOYMENT"
+bash deployment/02_deploy_infra.sh || log_error "Core services deployment failed."
+log_info "Waiting for database to initialize (15s)..."
 sleep 15
-$VENV_PYTHON validate_stage.py check_db
-if [ $? -eq 0 ]; then
-    log_success "Core Infrastructure Verified."
-else
-    error_handler "Core DB Validation Failed"
-fi
+pip3 install -q psycopg2-binary requests python-dotenv --break-system-packages
+python3 validate_stage.py check_db || log_error "DB validation failed."
+log_success "Core database and network services are active."
 
 # ==============================================================================
-# PHASE 3: INTELLIGENCE & LEGAL LAYER (NATIVE)
+# PHASE 5: LEGAL COMPLIANCE HARDENING
 # ==============================================================================
-print_header "PHASE 3: INTELLIGENCE & LEGAL INJECTION"
-
-# Check for Native Ollama
-if ! command -v ollama &> /dev/null; then
-    log_info "Installing Native Ollama (CPU/GPU)..."
-    curl -fsSL https://ollama.com/install.sh | sh
-    
-    # Configure Network Bind
-    mkdir -p /etc/systemd/system/ollama.service.d
-    echo "[Service]" > /etc/systemd/system/ollama.service.d/environment.conf
-    echo "Environment=\"OLLAMA_HOST=0.0.0.0:11434\"" >> /etc/systemd/system/ollama.service.d/environment.conf
-    systemctl daemon-reload
-    systemctl restart ollama
-fi
-
-log_success "Native AI Engine Active."
-
-# Pull Models Natively
-log_info "Pulling AI Models directly to Host..."
-ollama pull qwen2.5:14b
-ollama pull nomic-embed-text
-
-# Legal Injection
-log_info "Injecting Yemeni Legal Context..."
-$VENV_PYTHON legal_injector.py
-
-log_success "AI Brain Hardened & Legally Compliant."
+log_phase 5 "LEGAL COMPLIANCE HARDENING"
+python3 deployment/03_legal_hardening.py || log_error "Legal hardening failed."
+log_success "AI models hardened with Sovereign Constitution."
 
 # ==============================================================================
-# PHASE 4: TOOLS & LOGIC LAYER
+# PHASE 6: APPLICATION DEPLOYMENT
 # ==============================================================================
-print_header "PHASE 4: TOOLS & LOGIC DEPLOYMENT"
-
-# Build & Deploy Backend
-log_info "Deploying Backend API & DeepSafe..."
-docker compose -f deployment/docker-compose.prod.yml up -d backend yemen-core
-
-# Validate API
+log_phase 6 "APPLICATION LAYER DEPLOYMENT"
+bash deployment/04_app.sh || log_error "Application deployment failed."
+log_info "Waiting for application startup (10s)..."
 sleep 10
-$VENV_PYTHON validate_stage.py check_api
-
-log_success "Backend Logic Operational."
-
-# ==============================================================================
-# PHASE 5: INTERFACE & GATEWAY LAYER
-# ==============================================================================
-print_header "PHASE 5: FRONTEND & GATEWAY"
-
-# Deploy Frontend
-log_info "Deploying Frontend UI..."
-docker compose -f deployment/docker-compose.prod.yml up -d frontend evolution-api
-
-# DNS Sync
-log_info "Syncing DNS Records with Cloudflare..."
-$VENV_PYTHON backend/dns_automator.py
-
-log_success "Gateway Active & Secured."
+python3 validate_stage.py check_api || log_error "API validation failed."
+log_success "Application layer is online."
 
 # ==============================================================================
-# FINAL REPORT
+# PHASE 7: TENANT PROVISIONING & EMAIL AUTOMATION
 # ==============================================================================
-print_header "COMMISSIONING REPORT"
+log_phase 7 "DNS & EMAIL AUTOMATION"
+log_info "Syncing DNS records with Cloudflare..."
+pip3 install -q httpx --break-system-packages
+python3 backend/dns_automator.py || log_error "DNS automation failed."
+log_info "Deploying Mailcow service..."
+docker compose -f docker-compose.mailcow.yml up -d 2>/dev/null || log_info "Mailcow deployment skipped or already running."
+log_success "DNS and routing configured."
 
-echo -e "------------------------------------------------------------"
-echo -e "PHASE           | STATUS      | DETAILS"
-echo -e "------------------------------------------------------------"
-echo -e "0. Prep         | ${GREEN}✅ PASSED${NC}   | Env Configured"
-echo -e "1. Cleaning     | ${GREEN}✅ PASSED${NC}   | System Cleaned (Debian 13)"
-echo -e "2. Core         | ${GREEN}✅ PASSED${NC}   | DB/Redis Active"
-echo -e "3. Brain        | ${GREEN}✅ PASSED${NC}   | Native Ollama + Qwen2.5"
-echo -e "4. Tools        | ${GREEN}✅ PASSED${NC}   | Backend/DeepSafe Active"
-echo -e "5. Interface    | ${GREEN}✅ PASSED${NC}   | UI Active on Port 80"
-echo -e "------------------------------------------------------------"
-echo -e "\nSystem is LIVE at: ${BOLD}http://$SERVER_PUBLIC_IP${NC}"
-echo -e "\n${YELLOW}NOTE: Keep your .env file safe. It contains master keys.${NC}"
+# ==============================================================================
+# PHASE 8: FINAL LOCKDOWN & HANDOVER
+# ==============================================================================
+log_phase 8 "FINAL LOCKDOWN & HANDOVER"
+pip3 install -q bcrypt --break-system-packages
+python3 deployment/seed_root.py || log_error "Root user seeding failed."
+bash deployment/06_lockdown.sh || log_error "System lockdown failed."
+
+# Final Report
+log_phase "✓" "DEPLOYMENT COMPLETE"
+cat deployment_report.md
+echo -e "\n${BOLD}${GREEN}RAIDANPRO SOVEREIGN PLATFORM IS NOW OPERATIONAL.${NC}"

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Globe, Plus, Trash2, ShieldCheck, Search, Loader2, 
@@ -6,7 +5,9 @@ import {
   Activity, ArrowRight, Shield, Database, Layout, 
   Video, CloudLightning, Settings2, Clock, CheckSquare, Square,
   Mail, MessageSquare, Map, FileText, Cpu, Eye, BarChart, Terminal, Lock, Info, Camera, Radio,
-  SearchCode, BarChart3, TrendingUp, AlertTriangle, FileSearch, Link2, BookOpen, Fingerprint, Share2
+  SearchCode, BarChart3, TrendingUp, AlertTriangle, FileSearch, Link2, BookOpen, Fingerprint, Share2,
+  // Added CheckCircle2 to fix missing component errors
+  CheckCircle2
 } from 'lucide-react';
 import { Domain, DomainStatus } from '../types';
 
@@ -27,7 +28,7 @@ const DomainManager: React.FC = () => {
     {
       name: 'العقل والذكاء السيادي',
       tools: [
-        { id: 'ollama_native', name: 'Ollama Native', icon: <Brain size={14} />, desc: 'تثبيت أصلي لأقصى أداء', req: '8GB RAM' },
+        { id: 'ollama_native', name: 'Ollama Native', icon: <Cpu size={14} />, desc: 'تثبيت أصلي لأقصى أداء', req: '8GB RAM' },
         { id: 'ragflow_neo4j', name: 'RAGFlow + Neo4j', icon: <Share2 size={14} />, desc: 'فهم المحتوى ورسم العلاقات', req: '16GB RAM' },
         { id: 'strapi', name: 'Strapi CMS', icon: <Layout size={14} />, desc: 'واجهة التقارير الاستخباراتية', req: '2GB RAM' },
         { id: 'ghost', name: 'Ghost Publish', icon: <FileText size={14} />, desc: 'نشر المقالات والنشرات البريدية', req: '1GB RAM' },
@@ -113,22 +114,22 @@ const DomainManager: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="space-y-6 animate-in fade-in duration-700">
+      <div className="bg-panel p-8 rounded-2xl border border-border-subtle shadow-elevation flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 bg-yemenBlue text-white rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="w-16 h-16 bg-brand-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
             <Globe size={32} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-yemenBlue">إدارة النطاقات والعملاء</h2>
-            <p className="text-gray-500 text-sm">تجهيز غرف الأخبار الاستقصائية والاتصال السيادي المخصص.</p>
+            <h2 className="text-2xl font-black text-text-primary">إدارة النطاقات والعملاء</h2>
+            <p className="text-text-subtle text-sm">تجهيز غرف الأخبار الاستقصائية والاتصال السيادي المخصص.</p>
           </div>
         </div>
         <button 
           onClick={() => setIsAdding(!isAdding)}
           disabled={!!provisioningId}
           className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md ${
-            isAdding ? 'bg-gray-100 text-gray-600' : 'bg-yemenGold text-yemenBlue-dark hover:scale-105 active:scale-95'
+            isAdding ? 'bg-canvas text-text-secondary' : 'bg-brand-accent text-canvas hover:scale-105 active:scale-95'
           }`}
         >
           {isAdding ? 'إلغاء' : <><Plus size={20} /> إضافة عميل جديد</>}
@@ -136,28 +137,29 @@ const DomainManager: React.FC = () => {
       </div>
 
       {provisioningId && (
-        <div className="bg-yemenBlue-dark rounded-2xl p-8 text-white shadow-2xl border-b-8 border-yemenGold animate-in zoom-in-95 duration-300">
+        <div className="bg-panel rounded-2xl p-8 text-white shadow-2xl border-b-8 border-brand-accent animate-in zoom-in-95 duration-300">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
-              <Mail className="text-yemenGold animate-pulse" size={32} />
+              <Mail className="text-brand-accent animate-pulse" size={32} />
               <div>
                 <h3 className="text-xl font-bold tracking-tight">جاري تجهيز الاتصال والبيئة لـ: {formData.domain_name}</h3>
-                <p className="text-blue-200 text-xs">عملية النشر السيادي (Provisioning) قيد التنفيذ...</p>
+                <p className="text-text-subtle text-xs">عملية النشر السيادي (Provisioning) قيد التنفيذ...</p>
               </div>
             </div>
-            <div className="text-yemenGold font-mono text-3xl font-black">
+            <div className="text-brand-accent font-mono text-3xl font-black">
               {Math.round((provisioningStep / provisioningLogs.length) * 100)}%
             </div>
           </div>
-          <div className="bg-black/40 p-5 rounded-2xl border border-white/5 h-48 overflow-y-auto custom-scrollbar font-mono text-xs text-left" dir="ltr">
+          <div className="bg-canvas p-5 rounded-2xl border border-border-subtle h-48 overflow-y-auto custom-scrollbar font-mono text-xs text-left" dir="ltr">
             {provisioningLogs.slice(0, provisioningStep).map((log, i) => (
               <div key={i} className="flex items-center gap-3 text-green-400 mb-2 border-l-2 border-green-500/30 pl-3">
-                <CheckCircle size={14} className="flex-shrink-0" />
+                {/* Fixed: CheckCircle2 is now imported from lucide-react */}
+                <CheckCircle2 size={14} className="flex-shrink-0" />
                 <span>{log}</span>
               </div>
             ))}
             {provisioningStep < provisioningLogs.length && (
-              <div className="flex items-center gap-3 text-yemenGold animate-pulse mb-2 border-l-2 border-yemenGold/30 pl-3">
+              <div className="flex items-center gap-3 text-brand-accent animate-pulse mb-2 border-l-2 border-brand-accent/30 pl-3">
                 <Settings2 size={14} className="animate-spin" />
                 <span>{provisioningLogs[provisioningStep]}</span>
               </div>
@@ -167,28 +169,28 @@ const DomainManager: React.FC = () => {
       )}
 
       {isAdding && !provisioningId && (
-        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 animate-in slide-in-from-top-4 duration-300">
-          <h3 className="text-yemenBlue font-black mb-8 flex items-center gap-2 text-xl border-b border-gray-100 pb-4">
-            <Zap className="text-yemenGold" /> اختيار مكدس الترسانة السيادية (Sovereign Arsenal Stack)
+        <div className="bg-panel p-8 rounded-2xl shadow-xl border border-border-subtle animate-in slide-in-from-top-4 duration-300">
+          <h3 className="text-brand-primary font-black mb-8 flex items-center gap-2 text-xl border-b border-border-subtle pb-4">
+            <Zap className="text-brand-accent" /> اختيار مكدس الترسانة السيادية (Sovereign Arsenal Stack)
           </h3>
           <form onSubmit={handleAddDomain} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-gray-500 text-xs font-bold uppercase tracking-widest">اسم النطاق الفرعي</label>
+                <label className="text-text-subtle text-xs font-bold uppercase tracking-widest">اسم النطاق الفرعي</label>
                 <input 
                   required
                   placeholder="investigation.client.org"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 outline-none focus:ring-2 ring-yemenBlue/10 font-mono"
+                  className="w-full bg-canvas border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:ring-2 ring-brand-primary/10 font-mono"
                   value={formData.domain_name}
                   onChange={e => setFormData({...formData, domain_name: e.target.value})}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-gray-500 text-xs font-bold uppercase tracking-widest">اسم المؤسسة المستفيدة</label>
+                <label className="text-text-subtle text-xs font-bold uppercase tracking-widest">اسم المؤسسة المستفيدة</label>
                 <input 
                   required
                   placeholder="وحدة التحقيق - تعز"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 outline-none focus:ring-2 ring-yemenBlue/10"
+                  className="w-full bg-canvas border border-border-subtle rounded-xl px-4 py-3 text-text-primary outline-none focus:ring-2 ring-brand-primary/10"
                   value={formData.client_name}
                   onChange={e => setFormData({...formData, client_name: e.target.value})}
                 />
@@ -199,7 +201,7 @@ const DomainManager: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-10">
                 {toolCategories.map((cat, idx) => (
                   <div key={idx} className="space-y-4">
-                    <h4 className="text-sm font-black text-yemenBlue bg-blue-50 px-4 py-2 rounded-lg inline-block border-r-4 border-yemenGold">{cat.name}</h4>
+                    <h4 className="text-sm font-black text-brand-primary bg-brand-primary/10 px-4 py-2 rounded-lg inline-block border-r-4 border-brand-accent">{cat.name}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {cat.tools.map(tool => (
                         <div key={tool.id} className="group relative">
@@ -208,18 +210,18 @@ const DomainManager: React.FC = () => {
                             onClick={() => toggleService(tool.id)}
                             className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-3 text-right group ${
                               formData.service_stack[tool.id]
-                              ? 'border-yemenBlue bg-blue-50 text-yemenBlue shadow-md ring-4 ring-yemenBlue/5'
-                              : 'border-gray-100 bg-white text-gray-500 hover:border-gray-200'
+                              ? 'border-brand-primary bg-brand-primary/10 text-brand-primary shadow-md ring-4 ring-brand-primary/5'
+                              : 'border-border-subtle bg-panel text-text-subtle hover:border-border-glass'
                             }`}
                           >
-                            <div className={`p-2.5 rounded-lg transition-colors ${formData.service_stack[tool.id] ? 'bg-yemenBlue text-white' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
+                            <div className={`p-2.5 rounded-lg transition-colors ${formData.service_stack[tool.id] ? 'bg-brand-primary text-white' : 'bg-canvas group-hover:bg-border-subtle'}`}>
                               {tool.icon}
                             </div>
                             <div className="flex-1 overflow-hidden text-right">
                                 <span className="text-[11px] font-black uppercase block leading-none mb-1 truncate">{tool.name}</span>
                                 <span className="text-[9px] opacity-60 block leading-tight truncate">{tool.req}</span>
                             </div>
-                            {formData.service_stack[tool.id] && <CheckSquare size={16} className="text-yemenBlue animate-in zoom-in duration-200" />}
+                            {formData.service_stack[tool.id] && <CheckSquare size={16} className="text-brand-primary animate-in zoom-in duration-200" />}
                           </button>
                         </div>
                       ))}
@@ -229,12 +231,12 @@ const DomainManager: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-end pt-6 border-t border-gray-100">
+            <div className="flex justify-end pt-6 border-t border-border-subtle">
               <button 
                 type="submit"
-                className="bg-yemenBlue hover:bg-yemenBlue-dark text-white px-12 py-4 rounded-xl font-black transition-all flex items-center gap-3 shadow-xl active:scale-95"
+                className="bg-brand-primary hover:bg-brand-primary-hover text-white px-12 py-4 rounded-xl font-black transition-all flex items-center gap-3 shadow-xl active:scale-95"
               >
-                <Zap size={20} fill="currentColor" className="text-yemenGold" /> تفعيل ونشر الاتصال والترسانة السيادية
+                <Zap size={20} fill="currentColor" className="text-brand-accent" /> تفعيل ونشر الاتصال والترسانة السيادية
               </button>
             </div>
           </form>
@@ -242,20 +244,20 @@ const DomainManager: React.FC = () => {
       )}
 
       {/* Domain Table Section */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="bg-panel rounded-2xl border border-border-subtle shadow-elevation overflow-hidden">
+        <div className="p-6 border-b border-border-subtle flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="relative w-full md:w-96">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-text-subtle" size={18} />
             <input 
               type="text" 
               placeholder="البحث في الدومينات أو العملاء..."
-              className="w-full bg-gray-50 border-none rounded-xl pr-10 pl-4 py-3 outline-none focus:ring-2 ring-yemenBlue/10 text-sm"
+              className="w-full bg-canvas border-none rounded-xl pr-10 pl-4 py-3 outline-none focus:ring-2 ring-brand-primary/10 text-sm text-text-primary"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex items-center gap-4">
-             <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+             <div className="text-[10px] font-black text-text-subtle uppercase tracking-widest flex items-center gap-2">
                 <Activity size={12} className="text-green-500" /> الحالة: جميع الأنظمة الاستقصائية مستقرة
              </div>
           </div>
@@ -263,14 +265,14 @@ const DomainManager: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-right">
-            <thead className="bg-gray-50/50">
+            <thead className="bg-canvas/50">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">النطاق والعميل</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">المكدس المخصص</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-center">الإدارة</th>
+                <th className="px-6 py-4 text-xs font-bold text-text-subtle uppercase">النطاق والعميل</th>
+                <th className="px-6 py-4 text-xs font-bold text-text-subtle uppercase">المكدس المخصص</th>
+                <th className="px-6 py-4 text-xs font-bold text-text-subtle uppercase text-center">الإدارة</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border-subtle">
               {domains.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="px-6 py-24 text-center">
@@ -282,23 +284,24 @@ const DomainManager: React.FC = () => {
                 </tr>
               ) : (
                 domains.filter(d => d.domain_name.includes(searchTerm) || d.client_name.includes(searchTerm)).map(domain => (
-                  <tr key={domain.id} className="hover:bg-gray-50/80 transition-all group">
+                  <tr key={domain.id} className="hover:bg-canvas/80 transition-all group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4 text-right">
-                        <div className="w-10 h-10 rounded-xl bg-yemenBlue/10 text-yemenBlue flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center font-bold">
                           <Server size={20} />
                         </div>
                         <div>
-                          <span className="font-black text-yemenBlue text-sm block">{domain.domain_name}</span>
-                          <span className="text-[11px] text-gray-500 font-bold">{domain.client_name}</span>
+                          <span className="font-black text-brand-primary text-sm block">{domain.domain_name}</span>
+                          <span className="text-[11px] text-text-subtle font-bold">{domain.client_name}</span>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5 flex-wrap max-w-[350px]">
                         {Object.entries(domain.service_stack).map(([key, active]) => active && (
-                          <div key={key} className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-200 text-gray-600 rounded-lg text-[9px] font-bold hover:border-yemenGold transition-all uppercase">
-                            <CheckCircle size={10} className="text-green-500" />
+                          <div key={key} className="flex items-center gap-1 px-2 py-1 bg-panel border border-border-subtle text-text-subtle rounded-lg text-[9px] font-bold hover:border-brand-accent transition-all uppercase">
+                            {/* Fixed: CheckCircle2 is now imported from lucide-react */}
+                            <CheckCircle2 size={10} className="text-green-500" />
                             {key}
                           </div>
                         ))}
@@ -306,10 +309,10 @@ const DomainManager: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
-                        <button className="p-2 text-gray-400 hover:text-yemenBlue hover:bg-blue-50 rounded-xl transition-all shadow-sm bg-white border border-gray-100" title="إعدادات المكدس">
+                        <button className="p-2 text-text-subtle hover:text-brand-primary hover:bg-brand-primary/10 rounded-xl transition-all shadow-sm bg-canvas border border-border-subtle" title="إعدادات المكدس">
                           <Settings2 size={18} />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shadow-sm bg-white border border-gray-100" title="حذف النطاق">
+                        <button className="p-2 text-text-subtle hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all shadow-sm bg-canvas border border-border-subtle" title="حذف النطاق">
                           <Trash2 size={18} />
                         </button>
                       </div>
@@ -324,25 +327,5 @@ const DomainManager: React.FC = () => {
     </div>
   );
 };
-
-const Brain: React.FC<{size?: number, className?: string}> = ({size = 24, className = ""}) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .52 8.105 4 4 0 0 0 6.003 0 4 4 0 0 0 .52-8.105 4 4 0 0 0-2.526-5.77A3 3 0 0 0 12 5Z" />
-    <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.52 8.105 4 4 0 0 1-6.003 0 4 4 0 0 1-.52-8.105 4 4 0 0 1 2.526-5.77A3 3 0 0 1 12 5Z" />
-    <path d="M9 13a4.5 4.5 0 0 0 3 4 4.5 4.5 0 0 0 3-4" />
-    <path d="M12 17v4" />
-    <path d="M12 12V5" />
-  </svg>
-);
 
 export default DomainManager;

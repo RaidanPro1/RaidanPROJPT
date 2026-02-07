@@ -14,3 +14,15 @@ google-auth-oauthlib
 httpx
 playwright
 img2pdf
+bcrypt
+# Agentic RAG Stack (v4.5)
+langgraph
+langchain-core
+langchain-community
+neo4j
+qdrant-client
+ray[default]
+minio
+unstructured[all-strategies]
+pypdf
+ollama

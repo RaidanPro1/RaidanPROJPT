@@ -1,5 +1,8 @@
-
 {
+  "dashboard_cat_infra": "الأركان التقنية (Infrastructure)",
+  "dashboard_cat_intel": "مصفوفة الاستخبارات (Intel Matrix)",
+  "dashboard_cat_identity": "إدارة الهوية والسيادة (Identity)",
+  "dashboard_cat_governance": "حوكمة النظام (Governance)",
   "header_search_placeholder": "البحث في الأدوات والبيانات...",
   "header_connection_status": "الاتصال السيادي: نشط",
   "header_user_role": "الجذر (Root Admin)",

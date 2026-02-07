@@ -1,5 +1,9 @@
 {
   "name": "YemenJPT Sovereign Dashboard",
   "description": "A comprehensive sovereign digital infrastructure management system for YemenJPT, featuring local AI integration, OSINT tools, forensic analysis, and crisis monitoring modules.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
 }

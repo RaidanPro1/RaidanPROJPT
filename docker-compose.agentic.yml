@@ -1,0 +1,73 @@
+# RaidanPro OS (v4.5) - Agentic Infrastructure Stack
+# This docker-compose file spins up the entire local-first AI stack.
+version: '3.8'
+
+networks:
+  raidan-net:
+    driver: bridge
+    name: raidan-net
+
+volumes:
+  neo4j_data:
+  qdrant_data:
+  minio_data:
+
+services:
+  # 1. Graph DB for relationship mapping
+  neo4j:
+    image: neo4j:5-enterprise
+    container_name: raidan-graph-db
+    networks:
+      - raidan-net
+    ports:
+      - "7474:7474" # HTTP
+      - "7687:7687" # Bolt
+    volumes:
+      - neo4j_data:/data
+    environment:
+      - NEO4J_AUTH=neo4j/sovereign_password # Change in production
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    restart: unless-stopped
+
+  # 2. Vector DB for semantic document search
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: raidan-vector-db
+    networks:
+      - raidan-net
+    ports:
+      - "6333:6333" # REST API
+      - "6334:6334" # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  # 3. Local S3-compatible storage for documents
+  minio:
+    image: minio/minio:latest
+    container_name: raidan-storage
+    networks:
+      - raidan-net
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Console
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: raidan_root
+      MINIO_ROOT_PASSWORD: sovereign_password # Change in production
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+  # 4. Ray head node for parallel processing cluster
+  ray-head:
+    image: rayproject/ray:latest-py311-cpu
+    container_name: raidan-ray-head
+    networks:
+      - raidan-net
+    ports:
+      - "8265:8265" # Ray Dashboard
+      - "10001:10001" # Ray Client
+    command: ray start --head --port=6379 --dashboard-host 0.0.0.0 --num-cpus=4
+    restart: unless-stopped
+    shm_size: '2gb' # Recommended for Ray

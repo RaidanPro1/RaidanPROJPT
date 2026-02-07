@@ -6,31 +6,50 @@ import asyncio
 import pty
 import json
 import subprocess
+import hashlib
 from typing import Dict, Any, List, Optional
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, UploadFile, File, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, UploadFile, File, WebSocket, WebSocketDisconnect, Request, Response
 from uuid import UUID
 from pathlib import Path
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
-# --- Import Logic Fix (Docker vs Local) ---
+# --- Ray Integration ---
 try:
-    # Container Environment (Files are at /app root)
-    import install_logic
-    import snapshot_engine
-    import email_engine
-    from lifeline import server_teleport, gdrive_backup
+    from ray_infra import RayManager
 except ImportError:
-    # Local Dev Environment (Running from project root)
-    from backend import install_logic
-    from backend import snapshot_engine
-    from backend import email_engine
-    from backend.lifeline import server_teleport, gdrive_backup
+    from backend.ray_infra import RayManager
 
 app = FastAPI(title="YemenJPT Sovereign Core API")
 
+# Setup Ray Manager
+ray_manager = RayManager.get_instance()
+
+@app.on_event("startup")
+async def startup_event():
+    # Initialize Ray and spawn actors
+    ray_manager.initialize()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    ray_manager.shutdown()
+
+class ImageETagMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        if response.headers.get("content-type", "").startswith("image/"):
+            if "etag" not in response.headers:
+                if hasattr(response, "body") and response.body:
+                    etag = hashlib.md5(response.body).hexdigest()
+                    response.headers["ETag"] = f'"{etag}"'
+            if "cache-control" not in response.headers:
+                response.headers["Cache-Control"] = "public, no-cache"
+        return response
+
+app.add_middleware(ImageETagMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -41,35 +60,68 @@ app.add_middleware(
 
 # Setup Static Directory
 STATIC_DIR = Path("static")
-STATIC_DIR.mkdir(parents=True, exist_ok=True) # Ensure it exists
-ICONS_DIR = STATIC_DIR / "icons"
-ICONS_DIR.mkdir(parents=True, exist_ok=True)
-
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Check Installation Mode
 if os.getenv("INSTALLATION_MODE") == "true":
-    print("🔧 [MODE] Installation Mode Active. Registering Wizard Router...")
-    app.include_router(install_logic.router)
+    from install_logic import router as install_router
+    app.include_router(install_router)
 
-# --- Root Endpoint for Wizard UI ---
 @app.get("/")
 async def read_root():
-    """
-    Serves the Installer Wizard UI if in installation mode, 
-    otherwise returns API status.
-    """
     if os.getenv("INSTALLATION_MODE") == "true":
         wizard_path = STATIC_DIR / "wizard.html"
         if wizard_path.exists():
             return FileResponse(wizard_path)
-        return {"status": "Installer Mode Active", "error": "Wizard UI file missing. Check /app/static/wizard.html"}
-    
     return {"status": "RaidanPro Core API Active", "docs_url": "/docs"}
 
-# --- Agentic Tools Definition (قدرات التحكم في النظام) ---
-# هذه الأدوات يمكن استدعاؤها من قبل Gemini/Ollama إذا كان المستخدم روت
+# --- Parallel AI Chat via Ray ---
+class ChatRequest(BaseModel):
+    message: str
+    model: str = "qwen2.5-sovereign"
+    context: Optional[List[Dict]] = []
 
+@app.post("/api/v1/ai/chat")
+async def chat_parallel(req: ChatRequest):
+    """Refactored chat endpoint using Ray Actors for parallel scaling."""
+    actor = ray_manager.get_chat_actor()
+    if not actor:
+        raise HTTPException(status_code=503, detail="AI Compute Cluster Offline")
+    
+    messages = req.context + [{"role": "user", "content": req.message}]
+    
+    # Ray Actor call (Remote execution)
+    result_ref = actor.chat.remote(model=req.model, messages=messages)
+    
+    # Wait for result with timeout
+    try:
+        import ray
+        result = await ray.get(result_ref)
+        if result["status"] == "error":
+            raise HTTPException(status_code=500, detail=result["message"])
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Actor timeout or failure: {str(e)}")
+
+# --- Parallel Forensic Analysis via Ray ---
+@app.post("/api/v1/forensics/analyze")
+async def forensic_parallel(file: UploadFile = File(...)):
+    """Refactored forensic endpoint leveraging Ray for compute-heavy pixel analysis."""
+    actor = ray_manager.get_forensics_actor()
+    if not actor:
+        raise HTTPException(status_code=503, detail="Forensic Compute Cluster Offline")
+    
+    file_content = await file.read()
+    
+    # Offload to Ray worker
+    import ray
+    result_ref = actor.run_ela_analysis.remote(file_content)
+    result = await ray.get(result_ref)
+    
+    return result
+
+# --- Legacy System Command Request ---
 class SystemCommandRequest(BaseModel):
     command: str
     target: str
@@ -77,65 +129,13 @@ class SystemCommandRequest(BaseModel):
 
 @app.post("/api/v1/agent/execute")
 async def execute_system_action(req: SystemCommandRequest):
-    """
-    نقطة النهاية الخاصة بالعميل الذكي (AI Agent Execution Endpoint).
-    تسمح للذكاء الاصطناعي بالتحكم في البنية التحتية.
-    """
-    # Security Check: In real app, verify Root Token here.
-    
     if req.command == "docker_manage":
-        action = req.params.get("action") # start, stop, restart
+        action = req.params.get("action")
         container = req.target
         cmd = ["docker", action, container]
-        
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            return {"status": "success", "output": result.stdout, "command": f"docker {action} {container}"}
+            return {"status": "success", "output": result.stdout}
         except subprocess.CalledProcessError as e:
             return {"status": "error", "output": e.stderr}
-
-    elif req.command == "list_services":
-        cmd = ["docker", "ps", "--format", "{{.Names}} - {{.Status}}"]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        return {"status": "success", "services": result.stdout.split('\n')}
-
-    elif req.command == "check_logs":
-        # قراءة آخر 50 سطر من السجلات
-        cmd = ["docker", "logs", "--tail", "50", req.target]
-        try:
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            return {"status": "success", "logs": result.stdout + result.stderr}
-        except Exception as e:
-             return {"status": "error", "message": str(e)}
-
     return {"status": "unknown_command"}
-
-# --- Model Forge Endpoints ---
-
-class ModelPullRequest(BaseModel):
-    model_tag: str
-
-@app.post("/api/v1/models/pull")
-async def pull_local_model(req: ModelPullRequest, background_tasks: BackgroundTasks):
-    """
-    أمر بتحميل موديل جديد إلى Ollama محلياً.
-    """
-    async def task_pull():
-        # This is a long running task
-        async with httpx.AsyncClient() as client:
-            # Ollama API pull
-            await client.post("http://ollama:11434/api/pull", json={"name": req.model_tag})
-            
-    background_tasks.add_task(task_pull)
-    return {"status": "initiated", "message": f"Pulling {req.model_tag} to sovereign storage..."}
-
-@app.get("/api/v1/models/local")
-async def list_local_models():
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get("http://ollama:11434/api/tags")
-            if resp.status_code == 200:
-                return resp.json()
-            return {"models": []}
-    except:
-        return {"models": [], "error": "Ollama Offline"}

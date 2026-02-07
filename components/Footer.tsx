@@ -1,82 +1,121 @@
 
 import React, { useState, useEffect } from 'react';
-import { Activity, Server, Zap, ShieldCheck, Globe, Wifi } from 'lucide-react';
+import { 
+  Activity, ShieldCheck, Wifi, Brain, 
+  Cpu, Database, HardDrive, Lock, 
+  ChevronUp, Globe, Zap, AlertTriangle
+} from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useSettings } from '../context/SettingsContext';
 
-// Custom Hook for Live Telemetry Simulation
+// Custom Hook for Live Tactical Telemetry Simulation
 const useTacticalTelemetry = () => {
-    const [ping, setPing] = useState(24);
-    const [fps, setFps] = useState(60);
+    const [stats, setStats] = useState({
+        ping: 24,
+        cpu: 12.4,
+        ram: 4.2,
+        load: 0.45
+    });
     
     useEffect(() => {
         const interval = setInterval(() => {
-            // Simulate realistic network fluctuation
-            setPing(prev => {
-                const noise = Math.floor(Math.random() * 5) - 2;
-                return Math.max(12, Math.min(45, prev + noise));
+            setStats(prev => {
+                const noise = (Math.random() - 0.5) * 2;
+                return {
+                    ping: Math.max(12, Math.min(45, Math.round(prev.ping + noise))),
+                    cpu: Math.max(5, Math.min(65, Number((prev.cpu + noise).toFixed(1)))),
+                    ram: Math.max(2, Math.min(16, Number((prev.ram + (noise * 0.1)).toFixed(1)))),
+                    load: Math.max(0.1, Math.min(1.2, Number((prev.load + (noise * 0.05)).toFixed(2))))
+                };
             });
-            setFps(Math.floor(Math.random() * (60 - 58) + 58));
-        }, 2000);
+        }, 3000);
         return () => clearInterval(interval);
     }, []);
 
-    return { ping, fps };
+    return stats;
 };
 
 const Footer: React.FC = () => {
-  const { t } = useLanguage();
-  const { ping } = useTacticalTelemetry();
-  const activeModel = "Qwen-2.5-Sovereign"; 
+  const { t, language } = useLanguage();
+  const { userRole } = useSettings();
+  const stats = useTacticalTelemetry();
+  const activeModel = "سيف (Saif-Native-INT8)"; 
 
   return (
-    <footer className="bg-slate-950 border-t border-brand-accent/30 text-xs z-40 relative shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.5)]">
-        <div className="max-w-[1800px] mx-auto px-6 h-14 flex items-center justify-between">
+    <footer className="bg-panel/90 backdrop-blur-glass border-t border-border-glass text-[10px] z-50 relative shrink-0 font-mono">
+        {/* Progress bar / System Load visualization */}
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-border-subtle overflow-hidden">
+            <div 
+              className="h-full bg-brand-primary transition-all duration-1000 shadow-glow-blue" 
+              style={{ width: `${(stats.cpu / 100) * 100}%` }}
+            ></div>
+        </div>
+
+        <div className="max-w-[1800px] mx-auto px-6 h-12 flex items-center justify-between">
             
-            {/* Left Zone: Legal & Copyright */}
+            {/* Left Zone: Brand & Legal */}
             <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2 text-text-subtle font-bold opacity-80">
-                    <span className="text-brand-accent">© 2026 RaidanPro.</span>
-                    <span className="hidden sm:inline">Sovereignty Protected.</span>
+                <div className="flex items-center gap-2 group cursor-default">
+                    <div className="w-5 h-5 bg-brand-primary rounded flex items-center justify-center text-white text-[10px] font-black group-hover:bg-brand-accent transition-colors">R</div>
+                    <div className="flex flex-col">
+                        <span className="text-text-primary font-black uppercase tracking-tighter leading-none">RaidanPro OS</span>
+                        <span className="text-[8px] text-text-subtle font-bold uppercase tracking-widest mt-0.5">Sovereign Edition v4.5</span>
+                    </div>
                 </div>
-                <div className="hidden md:flex items-center gap-4 text-[10px] font-bold text-text-subtle/60 uppercase tracking-widest">
-                    <a href="#" className="hover:text-text-primary transition-colors hover:underline decoration-brand-accent/50 underline-offset-4">Privacy Protocol</a>
-                    <a href="#" className="hover:text-text-primary transition-colors hover:underline decoration-brand-accent/50 underline-offset-4">Legal Doctrine</a>
+
+                <div className="hidden xl:flex items-center gap-4 text-text-subtle border-r border-border-subtle pr-4 mr-2">
+                    <span className="hover:text-brand-primary cursor-pointer transition-colors">{t('footer_privacy')}</span>
+                    <div className="w-1 h-1 bg-border-subtle rounded-full"></div>
+                    <span className="hover:text-brand-primary cursor-pointer transition-colors">{t('footer_terms')}</span>
                 </div>
             </div>
             
-            {/* Center Zone: Status Indicator (Mobile Hidden) */}
-            <div className="hidden lg:flex items-center gap-2 bg-slate-900/50 px-4 py-1.5 rounded-full border border-slate-800">
-                <div className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            {/* Center Zone: Real-time Status Heartbeat */}
+            <div className="hidden md:flex items-center gap-6 bg-canvas/40 px-6 py-1.5 rounded-full border border-border-glass shadow-inner">
+                <div className="flex items-center gap-2.5">
+                    <div className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600"></span>
+                    </div>
+                    <span className="text-[9px] font-black text-green-500 uppercase tracking-[0.2em]">Kernel_Link: Stable</span>
                 </div>
-                <span className="text-[10px] font-black text-green-500 uppercase tracking-[0.2em] font-mono">All Systems Operational</span>
+
+                <div className="w-px h-3 bg-border-subtle"></div>
+
+                <div className="flex items-center gap-4">
+                    <TelemetryItem icon={<Cpu size={12}/>} label="CPU" value={`${stats.cpu}%`} />
+                    <TelemetryItem icon={<Database size={12}/>} label="MEM" value={`${stats.ram}GB`} />
+                    <TelemetryItem icon={<Wifi size={12}/>} label="LAT" value={`${stats.ping}ms`} color={stats.ping > 40 ? 'text-brand-accent' : 'text-text-primary'} />
+                </div>
             </div>
 
-            {/* Right Zone: Live Telemetry */}
-            <div className="flex items-center gap-6 font-mono text-[10px] font-bold">
-                {/* Network Latency */}
-                <div className="flex items-center gap-2 text-text-subtle group cursor-help" title="Live Network Latency">
-                    <Wifi size={12} className={ping > 100 ? 'text-red-500' : 'text-brand-primary'} />
-                    <span>LATENCY:</span>
-                    <span className={`${ping < 30 ? 'text-green-400' : 'text-brand-accent'}`}>{ping}ms</span>
-                </div>
-                
-                <div className="w-px h-3 bg-slate-800"></div>
-
-                {/* AI Model Status */}
-                <div className="flex items-center gap-2 text-text-subtle">
-                    <BrainIcon size={12} className="text-purple-500" />
-                    <span className="hidden sm:inline">ACTIVE_CORE:</span>
-                    <span className="text-white bg-white/5 px-2 py-0.5 rounded border border-white/10">{activeModel}</span>
+            {/* Right Zone: Security & Authority Badge */}
+            <div className="flex items-center gap-6">
+                {/* Active AI Model Badge */}
+                <div className="flex items-center gap-2 group cursor-help" title="Active Local LLM Node">
+                    <Brain size={12} className="text-brand-primary" />
+                    <span className="text-text-subtle font-bold uppercase tracking-tighter hidden lg:inline">Core:</span>
+                    <span className="bg-brand-primary/10 text-brand-primary border border-brand-primary/20 px-2 py-0.5 rounded font-black text-[9px] uppercase">{activeModel}</span>
                 </div>
 
-                <div className="w-px h-3 bg-slate-800 hidden sm:block"></div>
+                <div className="w-px h-4 bg-border-subtle hidden sm:block"></div>
 
-                {/* Secure Connection Badge */}
-                <div className="hidden sm:flex items-center gap-1.5 text-brand-accent bg-brand-accent/5 px-2 py-1 rounded border border-brand-accent/10">
-                    <ShieldCheck size={10} />
-                    <span className="uppercase tracking-tighter">Encrypted</span>
+                {/* Authority Badge */}
+                <div className={`flex items-center gap-2 px-3 py-1 rounded border transition-all ${
+                  userRole === 'root' 
+                  ? 'bg-red-500/10 border-red-500/20 text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.1)]' 
+                  : 'bg-green-500/10 border-green-500/20 text-green-500'
+                }`}>
+                    <ShieldCheck size={12} />
+                    <span className="font-black uppercase tracking-widest text-[8px]">
+                        {userRole === 'root' ? 'ROOT_ENFORCED' : 'SECURED_USER'}
+                    </span>
+                </div>
+
+                {/* Session Timer / Region */}
+                <div className="hidden lg:flex items-center gap-2 text-text-subtle font-bold">
+                    <Globe size={12} />
+                    <span className="uppercase">Region: YE/SNA</span>
                 </div>
             </div>
         </div>
@@ -84,9 +123,19 @@ const Footer: React.FC = () => {
   );
 };
 
-// Simple icon wrapper
-const BrainIcon: React.FC<{size?: number, className?: string}> = ({size, className}) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>
+interface TelemetryItemProps {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+    color?: string;
+}
+
+const TelemetryItem: React.FC<TelemetryItemProps> = ({ icon, label, value, color = 'text-text-primary' }) => (
+    <div className="flex items-center gap-1.5 transition-all">
+        <span className="text-text-subtle opacity-70">{icon}</span>
+        <span className="text-text-subtle font-bold uppercase mr-0.5">{label}:</span>
+        <span className={`${color} font-black`}>{value}</span>
+    </div>
 );
 
 export default Footer;

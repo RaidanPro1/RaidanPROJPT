@@ -21,13 +21,13 @@ interface ToolSettingsCardProps {
 
 const ToolSettingsCard: React.FC<ToolSettingsCardProps> = ({ title, settings, onUpdate, variant = 'user' }) => {
   
-  const cardBorder = variant === 'root' ? 'border-red-900/30' : 'border-border-subtle';
+  const cardBorder = variant === 'root' ? 'border-red-500/30' : 'border-border-subtle';
   const headerColor = variant === 'root' ? 'text-red-500' : 'text-brand-primary';
-  const bgClass = variant === 'root' ? 'bg-red-950/10' : 'bg-panel';
+  const bgClass = variant === 'root' ? 'bg-red-500/5' : 'bg-canvas';
 
   return (
     <div className={`rounded-2xl border ${cardBorder} ${bgClass} overflow-hidden shadow-sm transition-all duration-300 hover:shadow-elevation`}>
-      <div className="p-5 border-b border-border-subtle/50 flex items-center gap-3">
+      <div className="p-5 border-b border-border-subtle flex items-center gap-3">
         <Settings2 size={18} className={headerColor} />
         <h3 className="text-sm font-black text-text-primary uppercase tracking-widest">{title}</h3>
       </div>
@@ -67,7 +67,7 @@ const ToolSettingsCard: React.FC<ToolSettingsCardProps> = ({ title, settings, on
                         min={config.min} max={config.max} step={config.step}
                         value={config.value}
                         onChange={(e) => onUpdate(key, Number(e.target.value))}
-                        className="w-full h-1.5 bg-slate-700/50 rounded-lg appearance-none cursor-pointer accent-brand-primary hover:accent-brand-accent transition-all"
+                        className="w-full h-1.5 bg-border-subtle rounded-lg appearance-none cursor-pointer accent-brand-primary hover:accent-brand-accent transition-all"
                     />
                 </div>
               )}
@@ -76,7 +76,7 @@ const ToolSettingsCard: React.FC<ToolSettingsCardProps> = ({ title, settings, on
               {config.type === 'toggle' && (
                 <button 
                     onClick={() => onUpdate(key, !config.value)}
-                    className={`w-12 h-6 rounded-full p-1 flex items-center transition-all duration-300 ${config.value ? 'bg-brand-primary justify-end shadow-glow-accent' : 'bg-slate-700 justify-start'}`}
+                    className={`w-12 h-6 rounded-full p-1 flex items-center transition-all duration-300 ${config.value ? 'bg-brand-primary justify-end shadow-glow-blue' : 'bg-border-subtle justify-start'}`}
                 >
                     <div className="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform"></div>
                 </button>
@@ -88,7 +88,7 @@ const ToolSettingsCard: React.FC<ToolSettingsCardProps> = ({ title, settings, on
                     <select 
                         value={config.value}
                         onChange={(e) => onUpdate(key, e.target.value)}
-                        className="w-full bg-canvas border border-border-subtle rounded-lg px-3 py-1.5 text-xs text-text-primary font-bold outline-none focus:border-brand-primary transition-all appearance-none cursor-pointer"
+                        className="w-full bg-panel border border-border-subtle rounded-lg px-3 py-1.5 text-xs text-text-primary font-bold outline-none focus:border-brand-primary transition-all appearance-none cursor-pointer"
                     >
                         {config.options.map(opt => (
                             <option key={opt} value={opt}>{opt.replace(/_/g, ' ').toUpperCase()}</option>

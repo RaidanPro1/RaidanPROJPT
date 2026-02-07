@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { X, Save, History, SlidersHorizontal, Shield, Loader2, Check } from 'lucide-react';
+// FIX: Imported the 'Lock' icon from lucide-react to resolve the JSX component type error.
+import { X, Save, History, SlidersHorizontal, Shield, Loader2, Check, Lock } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import ToolSettingsCard from './ToolSettingsCard';
 import { UserRole } from '../context/SettingsContext';
@@ -39,7 +40,10 @@ const ToolSettingsModal: React.FC<ToolSettingsModalProps> = ({ isOpen, onClose, 
         setTimeout(() => {
             setIsSaving(false);
             setShowToast(true);
-            setTimeout(() => setShowToast(false), 3000);
+            setTimeout(() => {
+                setShowToast(false);
+                onClose();
+            }, 2000);
         }, 1000);
     };
 
@@ -48,14 +52,14 @@ const ToolSettingsModal: React.FC<ToolSettingsModalProps> = ({ isOpen, onClose, 
             <div className="bg-panel rounded-2xl border border-border-subtle shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
                 
                 {/* Modal Header */}
-                <div className="p-6 border-b border-border-subtle flex justify-between items-center bg-slate-900/50">
+                <div className="p-6 border-b border-border-subtle flex justify-between items-center bg-panel/80 backdrop-blur-md">
                     <div className="flex items-center gap-4">
                         <div className="p-2 bg-brand-primary/10 rounded-lg text-brand-primary border border-brand-primary/20">
                             <SlidersHorizontal size={20} />
                         </div>
                         <div>
                             <h3 className="text-lg font-black text-text-primary uppercase tracking-widest">{t('modal_settings_title')}</h3>
-                            <p className="text-xs text-brand-accent font-bold mt-0.5">{tool.display_name} Configuration Matrix</p>
+                            <p className="text-xs text-brand-primary font-bold mt-0.5">{tool.display_name} Configuration Matrix</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 text-text-subtle hover:text-white transition-colors rounded-lg bg-white/5 hover:bg-white/10">
@@ -100,10 +104,10 @@ const ToolSettingsModal: React.FC<ToolSettingsModalProps> = ({ isOpen, onClose, 
                                     <div className="p-6 border border-dashed border-border-subtle rounded-xl text-center text-text-subtle text-xs">No root configurations available.</div>
                                 )
                             ) : (
-                                <div className="h-full bg-slate-950/50 border border-slate-800 rounded-2xl flex flex-col items-center justify-center p-8 text-center gap-3">
-                                    <Shield size={32} className="text-slate-700" />
-                                    <p className="text-sm font-bold text-slate-500">Access Restricted</p>
-                                    <p className="text-[10px] text-slate-600 uppercase tracking-widest">Root privileges required</p>
+                                <div className="h-full bg-panel border border-border-subtle rounded-2xl flex flex-col items-center justify-center p-8 text-center gap-3">
+                                    <Lock size={32} className="text-text-subtle" />
+                                    <p className="text-sm font-bold text-text-secondary">Access Restricted</p>
+                                    <p className="text-[10px] text-text-subtle uppercase tracking-widest">Root privileges required</p>
                                 </div>
                             )}
                         </div>

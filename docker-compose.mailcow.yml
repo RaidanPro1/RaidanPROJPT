@@ -1,0 +1,84 @@
+# RaidanPro - Mailcow Sovereign Email Stack v1.0
+# Deploys Mailcow: dockerized for professional email hosting
+# Network: infrastructure_net (assumed to be created externally or via another compose)
+version: '3.8'
+
+networks:
+  infrastructure_net:
+    name: infrastructure_net
+    external: true
+
+volumes:
+  vmail-vol-1:
+  mysql-vol-1:
+  redis-vol-1:
+  rspamd-vol-1:
+  solr-vol-1:
+
+services:
+  # Database for Mailcow
+  mysql-mailcow:
+    image: mariadb:10.6
+    container_name: mailcow-mysql
+    volumes:
+      - mysql-vol-1:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=sovereign_db_root_pass # Change this
+      - MYSQL_DATABASE=mailcow
+      - MYSQL_USER=mailcow
+      - MYSQL_PASSWORD=sovereign_db_pass # Change this
+    restart: always
+    networks:
+      - infrastructure_net
+
+  # Nginx is the web entrypoint for Mailcow UI
+  nginx-mailcow:
+    image: mailcow/nginx:1.25
+    container_name: mailcow-nginx
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    depends_on:
+      - php-fpm-mailcow
+    labels:
+      - "traefik.enable=true"
+      # HTTP Router (for redirection)
+      - "traefik.http.routers.mailcow-http.rule=Host(`mail.raidan.pro`)"
+      - "traefik.http.routers.mailcow-http.entrypoints=web"
+      - "traefik.http.routers.mailcow-http.middlewares=https-redirect@file" # Assuming this middleware is defined in Traefik's static config
+      # HTTPS Router (Main)
+      - "traefik.http.routers.mailcow-web.rule=Host(`mail.raidan.pro`)"
+      - "traefik.http.routers.mailcow-web.entrypoints=websecure"
+      - "traefik.http.routers.mailcow-web.tls.certresolver=le" # 'le' is the Let's Encrypt resolver
+      - "traefik.http.services.mailcow-web.loadbalancer.server.port=8080"
+
+  # Other necessary mailcow services...
+  php-fpm-mailcow:
+    image: mailcow/phpfpm:8.3
+    container_name: mailcow-phpfpm
+    restart: unless-stopped
+    networks:
+      - infrastructure_net
+    depends_on:
+      - mysql-mailcow
+    # ... volumes, env vars, etc.
+  
+  postfix-mailcow:
+    image: mailcow/postfix:1.25
+    container_name: mailcow-postfix
+    ports:
+      - "25:25"   # SMTP
+      - "587:587"   # SMTP Submission
+    networks:
+      - infrastructure_net
+    restart: always
+
+  dovecot-mailcow:
+    image: mailcow/dovecot:1.25
+    container_name: mailcow-dovecot
+    ports:
+      - "993:993" # IMAPS
+      - "995:995" # POP3S
+    networks:
+      - infrastructure_net
+    restart: always

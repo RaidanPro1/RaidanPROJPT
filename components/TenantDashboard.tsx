@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Layout, Mail, Server, Globe, Users, Wrench, 
@@ -12,9 +11,9 @@ import EmailSettingsDashboard from './EmailSettingsDashboard'; // Reusing existi
 import DNSManager from './DNSManager'; // Reusing existing
 
 // Placeholder components for other tabs
-const HostingPanel = () => <div className="p-8 text-center text-slate-500 font-bold">Hosting Management Panel (Coming Soon)</div>;
-const UsersPanel = () => <div className="p-8 text-center text-slate-500 font-bold">User Management Panel (Coming Soon)</div>;
-const ToolsPanel = () => <div className="p-8 text-center text-slate-500 font-bold">Tool Configuration Panel (Coming Soon)</div>;
+const HostingPanel = () => <div className="p-8 text-center text-text-subtle font-bold">Hosting Management Panel (Coming Soon)</div>;
+const UsersPanel = () => <div className="p-8 text-center text-text-subtle font-bold">User Management Panel (Coming Soon)</div>;
+const ToolsPanel = () => <div className="p-8 text-center text-text-subtle font-bold">Tool Configuration Panel (Coming Soon)</div>;
 
 interface TenantDashboardProps {
   tenant: Tenant;
@@ -46,7 +45,7 @@ const TenantDashboard: React.FC<TenantDashboardProps> = ({ tenant }) => {
             <h2 className="text-2xl font-black text-text-primary leading-none">{tenant.name}</h2>
             <div className="flex items-center gap-2 mt-2">
                <span className="text-xs font-bold text-text-subtle font-mono">{tenant.domain}</span>
-               <div className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${tenant.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+               <div className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${tenant.status === 'active' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
                  {tenant.status}
                </div>
             </div>

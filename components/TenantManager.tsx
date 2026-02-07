@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Users, Search, Plus, MoreVertical, Globe, ShieldCheck, Cpu, Database, Trash2, ExternalLink, Activity, CloudLightning, Filter, ArrowUpRight, ShieldAlert } from 'lucide-react';
 import { Tenant } from '../types';
@@ -29,39 +28,39 @@ const TenantManager: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="bg-panel p-8 rounded-2xl border border-border-subtle shadow-elevation flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 bg-yemenBlue/10 text-yemenBlue rounded-2xl flex items-center justify-center shadow-sm border border-yemenBlue/20">
+          <div className="w-16 h-16 bg-brand-primary/10 text-brand-primary rounded-2xl flex items-center justify-center shadow-sm border border-brand-primary/20">
             <Users size={32} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-900">سجل الكيانات السيادية</h2>
-            <p className="text-sm text-yemenBlue font-bold uppercase tracking-wider">Sovereign Tenant Registry</p>
+            <h2 className="text-2xl font-black text-text-primary">سجل الكيانات السيادية</h2>
+            <p className="text-sm text-brand-primary font-bold uppercase tracking-wider">Sovereign Tenant Registry</p>
           </div>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md bg-yemenGold text-yemenBlue-dark hover:scale-105 active:scale-95"
+          className="px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md bg-brand-accent text-canvas hover:scale-105 active:scale-95"
         >
           <Plus size={20} /> إضافة مستأجر جديد
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="bg-panel rounded-2xl border border-border-subtle shadow-elevation overflow-hidden">
+        <div className="p-6 border-b border-border-subtle flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="relative w-full md:w-96 group">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-yemenBlue transition-colors" size={18} />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-text-subtle group-focus-within:text-brand-primary transition-colors" size={18} />
             <input 
               type="text" 
               placeholder="بحث تكتيكي (اسم الكيان أو الدومين)..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pr-12 pl-4 py-3 text-sm outline-none focus:border-yemenBlue/50 transition-all text-slate-900"
+              className="w-full bg-canvas border border-border-subtle rounded-xl pr-12 pl-4 py-3 text-sm outline-none focus:border-brand-primary/50 transition-all text-text-primary"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
         <div className="overflow-x-auto">
-           {/* Table content would go here, refactored for light theme */}
+           {/* Table content would go here, refactored for dark theme */}
         </div>
       </div>
       

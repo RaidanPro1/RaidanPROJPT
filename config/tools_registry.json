@@ -1,29 +1,36 @@
 
 [
   {
-    "module_key": "smart_newsroom",
-    "display_name": "غرفة الأخبار الذكية",
-    "description": "إدارة النشر والتقارير الاستقصائية.",
-    "icon_name": "Newspaper",
+    "module_key": "dashboard",
+    "display_name": "الرئيسية (System Hub)",
+    "description": "نظرة عامة على حالة النظام والوحدات الاستخباراتية.",
+    "icon_name": "LayoutDashboard",
     "is_active": true,
-    "route_path": "/smart-newsroom",
-    "settings": {
-      "user": {
-        "creativity": { "type": "slider", "label": "مستوى الإبداع (Creativity)", "value": 0.5, "min": 0, "max": 1, "step": 0.1 },
-        "responseLength": { "type": "select", "label": "طول الرد", "value": "detailed", "options": ["brief", "detailed", "comprehensive"] },
-        "autoSave": { "type": "toggle", "label": "حفظ تلقائي", "value": true }
-      },
-      "root": {
-        "ramLimit": { "type": "slider", "label": "حد الذاكرة (MB)", "value": 1024, "min": 256, "max": 4096, "step": 256 },
-        "accessControl": { "type": "select", "label": "نموذج الوصول", "value": "role_based", "options": ["public", "role_based", "strict"] },
-        "maintenanceMode": { "type": "toggle", "label": "وضع الصيانة", "value": false }
-      }
-    }
+    "route_path": "/dashboard",
+    "settings": {}
+  },
+  {
+    "module_key": "root_command",
+    "display_name": "برج المراقبة (Root)",
+    "description": "إدارة البنية التحتية، الحاويات، والسيادة التشغيلية.",
+    "icon_name": "TowerControl",
+    "is_active": true,
+    "route_path": "/root-command",
+    "settings": {}
+  },
+  {
+    "module_key": "governance",
+    "display_name": "عقيدة النظام",
+    "description": "إدارة أخلاقيات وسلوك الذكاء الاصطناعي والدستور الرقمي.",
+    "icon_name": "BookText",
+    "is_active": true,
+    "route_path": "/governance",
+    "settings": {}
   },
   {
     "module_key": "public_chat",
     "display_name": "المحادثة السيادية",
-    "description": "واجهة دردشة عامة مع نماذج ذكاء اصطناعي متعددة.",
+    "description": "واجهة دردشة آمنة مع نماذج ذكاء اصطناعي متعددة (الهجين).",
     "icon_name": "MessageSquare",
     "is_active": true,
     "route_path": "/chat",
@@ -37,96 +44,120 @@
     }
   },
   {
-    "module_key": "predictive_hub",
-    "display_name": "بوابة المؤشرات",
-    "description": "صفحة هبوط عامة لعرض مؤشرات الاستبصار الاستراتيجية.",
-    "icon_name": "Globe",
+    "module_key": "smart_newsroom",
+    "display_name": "غرفة الأخبار الذكية",
+    "description": "إدارة النشر والتقارير الاستقصائية والربط مع CMS.",
+    "icon_name": "Newspaper",
     "is_active": true,
-    "route_path": "/indicators",
+    "route_path": "/smart-newsroom",
+    "settings": {
+      "user": {
+        "creativity": { "type": "slider", "label": "مستوى الإبداع", "value": 0.5, "min": 0, "max": 1, "step": 0.1 },
+        "autoSave": { "type": "toggle", "label": "حفظ تلقائي", "value": true }
+      }
+    }
+  },
+  {
+    "module_key": "forensics_lab",
+    "display_name": "مختبر الجنايات الرقمية",
+    "description": "كشف التزييف العميق وتحليل الصور الجنائي (ELA).",
+    "icon_name": "Fingerprint",
+    "is_active": true,
+    "route_path": "/forensics-lab",
+    "settings": {
+      "user": {
+        "scanMode": { "type": "select", "label": "نوع الفحص", "value": "rapid", "options": ["rapid", "deep_scan"] }
+      }
+    }
+  },
+  {
+    "module_key": "geo_int_station",
+    "display_name": "المحطة الجغرافية (GeoInt)",
+    "description": "تحليل الصور الفضائية Sentinel-2 والخرائط السيادية.",
+    "icon_name": "Map",
+    "is_active": true,
+    "route_path": "/geo-int",
+    "settings": {}
+  },
+  {
+    "module_key": "dialect_engine",
+    "display_name": "محرك الصوت (مُنصت)",
+    "description": "تفريغ XXL وعزل الصوت عبر VR-Arch للهجات اليمنية.",
+    "icon_name": "Mic2",
+    "is_active": true,
+    "route_path": "/dialect-engine",
+    "settings": {}
+  },
+  {
+    "module_key": "data_feeds",
+    "display_name": "إدارة مصادر البيانات",
+    "description": "التحكم في تدفقات البيانات من GDELT و World Bank.",
+    "icon_name": "DatabaseZap",
+    "is_active": true,
+    "route_path": "/data-feeds",
+    "settings": {}
+  },
+  {
+    "module_key": "branding",
+    "display_name": "تخصيص الواجهة",
+    "description": "إدارة الهوية البصرية، الألوان، والشعارات.",
+    "icon_name": "Palette",
+    "is_active": true,
+    "route_path": "/branding",
+    "settings": {}
+  },
+  {
+    "module_key": "tenants",
+    "display_name": "إدارة المستأجرين",
+    "description": "تجهيز وإدارة الكيانات السيادية (Organizations).",
+    "icon_name": "Users",
+    "is_active": true,
+    "route_path": "/tenants",
     "settings": {}
   },
   {
     "module_key": "seo_manager",
     "display_name": "إدارة SEO",
-    "description": "التحكم في العلامات الوصفية والظهور في محركات البحث.",
+    "description": "التحكم في العلامات الوصفية والظهور العام.",
     "icon_name": "Search",
     "is_active": true,
     "route_path": "/seo",
     "settings": {}
   },
   {
-    "module_key": "forensics_lab",
-    "display_name": "مختبر الجنايات الرقمية",
-    "description": "كشف التزييف العميق وتحليل الصور.",
-    "icon_name": "Fingerprint",
+    "module_key": "tool_identity",
+    "display_name": "هوية الأدوات",
+    "description": "تخصيص مسميات وأيقونات كافة وحدات النظام.",
+    "icon_name": "Wrench",
     "is_active": true,
-    "route_path": "/forensics-lab",
-    "settings": {
-      "user": {
-        "scanMode": { "type": "select", "label": "نوع الفحص", "value": "rapid", "options": ["rapid", "deep_scan", "metadata_only"] },
-        "heatmapOpacity": { "type": "slider", "label": "شفافية الخريطة الحرارية", "value": 0.7, "min": 0.1, "max": 1, "step": 0.1 }
-      },
-      "root": {
-        "detectionThreshold": { "type": "slider", "label": "عتبة الحساسية", "value": 0.85, "min": 0.5, "max": 0.99, "step": 0.01 },
-        "maxUploadSize": { "type": "slider", "label": "أقصى حجم للملف (MB)", "value": 500, "min": 100, "max": 2000, "step": 100 },
-        "logRetention": { "type": "select", "label": "فترة الاحتفاظ بالسجلات", "value": "30_days", "options": ["7_days", "30_days", "permanent"] }
-      }
-    }
+    "route_path": "/tool-identity",
+    "settings": {}
   },
   {
-    "module_key": "data_feeds",
-    "display_name": "إدارة مصادر البيانات (Yemen Core)",
-    "description": "نواة البيانات والربط بالمصادر الخارجية.",
-    "icon_name": "DatabaseZap",
-    "is_active": true,
-    "route_path": "/data-feeds",
-    "settings": {
-      "user": {
-        "sourceFilter": { "type": "select", "label": "تصفية المصادر", "value": "all", "options": ["all", "official_only", "leaks_only"] },
-        "notifications": { "type": "toggle", "label": "تنبيهات التحديث", "value": true }
-      },
-      "root": {
-        "apiRateLimit": { "type": "slider", "label": "معدل الطلبات (Req/m)", "value": 60, "min": 10, "max": 300, "step": 10 },
-        "worldBankSync": { "type": "toggle", "label": "تفعيل مزامنة البنك الدولي", "value": true },
-        "autoIngest": { "type": "toggle", "label": "الاستيراد التلقائي للوثائق", "value": false }
-      }
-    }
-  },
-  {
-    "module_key": "dialect_engine",
-    "display_name": "Sovereign Chat (AI Core)",
-    "description": "محرك المحادثة والذكاء الاصطناعي.",
+    "module_key": "model_forge",
+    "display_name": "ورشة النماذج (Forge)",
+    "description": "تحميل وتخصيص نماذج الذكاء الاصطناعي المحلية.",
     "icon_name": "Brain",
     "is_active": true,
-    "route_path": "/chat",
-    "settings": {
-      "user": {
-        "temperature": { "type": "slider", "label": "درجة الإبداع", "value": 0.4, "min": 0, "max": 1, "step": 0.1 },
-        "outputFormat": { "type": "select", "label": "تنسيق الرد", "value": "markdown", "options": ["text", "markdown", "json"] }
-      },
-      "root": {
-        "defaultModel": { "type": "select", "label": "الموديل الافتراضي", "value": "qwen2.5", "options": ["qwen2.5", "llama3", "mistral"] },
-        "vectorDb": { "type": "toggle", "label": "تفعيل الذاكرة طويلة المدى", "value": true },
-        "thinkingBudget": { "type": "slider", "label": "ميزانية التفكير (Tokens)", "value": 2048, "min": 0, "max": 8192, "step": 1024 }
-      }
-    }
+    "route_path": "/model-forge",
+    "settings": {}
   },
   {
-    "module_key": "tenants",
-    "display_name": "Hosting & Provisioning",
-    "description": "إدارة الاستضافة والمستأجرين.",
-    "icon_name": "Server",
+    "module_key": "core_settings",
+    "display_name": "الإعدادات المتقدمة",
+    "description": "تكوين النواة، السيرفرات، وتكاملات API.",
+    "icon_name": "Sliders",
     "is_active": true,
-    "route_path": "/tenants",
-    "settings": {
-      "user": {
-        "dashboardRefresh": { "type": "select", "label": "تحديث اللوحة", "value": "30s", "options": ["10s", "30s", "60s"] }
-      },
-      "root": {
-        "defaultDns": { "type": "select", "label": "مزود DNS الافتراضي", "value": "technitium", "options": ["technitium", "cloudflare", "route53"] },
-        "emailTemplates": { "type": "select", "label": "قالب البريد الترحيبي", "value": "standard_ar", "options": ["standard_ar", "standard_en", "vip_ar"] },
-        "provisioningTimeout": { "type": "slider", "label": "مهلة التجهيز (ثانية)", "value": 300, "min": 60, "max": 600, "step": 60 }
-      }
-    }
+    "route_path": "/settings",
+    "settings": {}
+  },
+  {
+    "module_key": "terminal",
+    "display_name": "Terminal",
+    "description": "الوصول المباشر لسطر أوامر السيرفر السيادي.",
+    "icon_name": "Terminal",
+    "is_active": true,
+    "route_path": "/terminal",
+    "settings": {}
   }
 ]

@@ -17,7 +17,7 @@ const InfrastructureStrategy: React.FC = () => {
     },
     {
       title: "المرحلة الثانية: العقل المحلي (Native AI Core)",
-      icon: <Brain className="text-purple-500" size={20} />,
+      icon: <BrainIcon className="text-purple-500" size={20} />,
       color: "border-purple-500",
       items: [
         "تثبيت Ollama Native (أصلي) لأقصى أداء مع Qwen 2.5",
@@ -155,7 +155,7 @@ const InfrastructureStrategy: React.FC = () => {
   );
 };
 
-const Brain: React.FC<{size?: number, className?: string}> = ({size = 24, className = ""}) => (
+const BrainIcon: React.FC<{size?: number, className?: string}> = ({size = 24, className = ""}) => (
   <svg 
     width={size} 
     height={size} 
